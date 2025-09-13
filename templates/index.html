@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Support Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chatbot {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(80, 80, 120, 0.18), 0 1.5px 4px rgba(80, 80, 120, 0.10);
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1.5px solid rgba(255,255,255,0.25);
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #4CAF50 60%, #45a049 100%);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.08);
+        }
+
+        .chatbot-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .chatbot-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .language-selector {
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.25);
+            color: #333;
+            margin-right: 10px;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        .language-selector:focus-visible {
+            outline: 2px solid #4CAF50;
+        }
+        .language-selector option {
+            color: #222;
+        }
+
+        .chatbot-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: #333;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .chatbot-btn:hover, .chatbot-btn:focus-visible {
+            background: #4CAF50;
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 18px 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 82%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 7px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.10);
+        }
+
+        .bot-message {
+            background: rgba(245, 245, 255, 0.95);
+            color: #222;
+            align-self: flex-start;
+            border-bottom-left-radius: 7px;
+            border-left: 3px solid #4CAF50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.07);
+        }
+
+        .input-area {
+            padding: 18px 16px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 12px;
+            background: rgba(255,255,255,0.6);
+        }
+
+        .user-input {
+            flex: 1;
+            padding: 13px 18px;
+            border: 1.5px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 15px;
+            background: rgba(255,255,255,0.85);
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+        .user-input:focus-visible {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px #4CAF5040;
+        }
+
+        .action-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.7);
+            color: #333;
+        }
+        .action-btn:focus-visible {
+            outline: 2px solid #4CAF50;
+        }
+        .action-btn:hover {
+            transform: scale(1.12);
+            background: #e0e0e0;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .send-btn:hover, .send-btn:focus-visible {
+            background: linear-gradient(135deg, #388e3c, #43a047);
+        }
+        .voice-btn {
+            background: linear-gradient(135deg, #f44336, #e57373);
+            color: white;
+        }
+        .voice-btn.listening {
+            background: #d32f2f;
+            animation: pulse 1s infinite;
+        }
+        .read-btn {
+            background: linear-gradient(135deg, #2196F3, #64b5f6);
+            color: white;
+        }
+        .read-btn.active {
+            background: #1976D2;
+        }
+        .stop-btn {
+            background: #9E9E9E;
+            color: white;
+        }
+        .tts-btn {
+            background: #FF9800;
+            color: white;
+        }
+        .tts-btn.active {
+            background: #F57C00;
+            animation: pulse 1s infinite;
+        }
+
+        .tts-controls {
+            display: flex;
+            gap: 7px;
+            margin-top: 12px;
+            padding: 10px 0 0 0;
+            background: none;
+            border-radius: 8px;
+            border-left: 3px solid #FF9800;
+        }
+        .tts-control-btn {
+            padding: 7px 13px;
+            border: none;
+            border-radius: 7px;
+            background: #FF9800;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .tts-control-btn:hover, .tts-control-btn:focus-visible {
+            background: #F57C00;
+        }
+        .tts-control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .tts-status {
+            font-size: 13px;
+            color: #666;
+            margin-left: 10px;
+            align-self: center;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 7px;
+            padding: 10px;
+            align-self: flex-start;
+        }
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            background: #ccc;
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .analysis-container {
+            background: rgba(33, 150, 243, 0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .analysis-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2196F3;
+        }
+        .depression-meter {
+            height: 12px;
+            background: #e0e0e0;
+            border-radius: 6px;
+            margin: 7px 0;
+            overflow: hidden;
+        }
+        .depression-level {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A, #FFC107, #FF9800, #F44336);
+        }
+        .word-contributions {
+            margin-top: 10px;
+        }
+        .word-item {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+        }
+        .word {
+            font-weight: bold;
+            min-width: 80px;
+        }
+        .contribution {
+            margin-left: 10px;
+            font-size: 13px;
+        }
+        .positive {
+            color: #4CAF50;
+        }
+        .negative {
+            color: #F44336;
+        }
+        .motivation {
+            font-style: italic;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 235, 59, 0.18);
+            border-left: 3px solid #FFC107;
+            border-radius: 0 7px 7px 0;
+            font-size: 14px;
+        }
+        .joke {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(76, 175, 80, 0.13);
+            border-left: 3px solid #4CAF50;
+            border-radius: 0 7px 7px 0;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 600px) {
+            .chatbot {
+                height: 95vh;
+                border-radius: 0;
+                max-width: 100vw;
+            }
+            .chatbot-header, .input-area {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+            .chat-area {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+        }
+
+        /* Resources Panel Styles */
+        .resources-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(8px) saturate(120%);
+        }
+        .resources-content {
+            background: rgba(255,255,255,0.95);
+            border-radius: 18px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+        .resources-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 18px 22px;
+            border-radius: 18px 18px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .resources-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .close-resources-btn {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: white;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        .close-resources-btn:hover, .close-resources-btn:focus-visible {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
+        }
+        .resource-item {
+            padding: 22px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        .resource-item:last-child {
+            border-bottom: none;
+        }
+        .resource-item h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 17px;
+            font-weight: 600;
+        }
+        .resource-item p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .resource-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 13px 26px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.18);
+        }
+        .resource-btn:hover, .resource-btn:focus-visible {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.22);
+        }
+        .resource-btn:active {
+            transform: translateY(0);
+        }
+        .youtube-btn {
+            background: #FF0000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            margin: 5px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .youtube-btn:hover, .youtube-btn:focus-visible {
+            background: #CC0000;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot">
+        <div class="chatbot-header">
+            <div class="chatbot-title">Mental Health Support</div>
+            <div class="chatbot-controls">
+                <select class="language-selector" id="languageSelector">
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="es">Español (Spanish)</option>
+                    <option value="fr">Français (French)</option>
+                    <option value="de">Deutsch (German)</option>
+                    <option value="it">Italiano (Italian)</option>
+                    <option value="pt">Português (Portuguese)</option>
+                    <option value="ru">Русский (Russian)</option>
+                    <option value="ja">日本語 (Japanese)</option>
+                    <option value="ko">한국어 (Korean)</option>
+                    <option value="zh">中文 (Chinese)</option>
+                    <option value="ar">العربية (Arabic)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="ur">اردو (Urdu)</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="ml">മലയാളം (Malayalam)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                </select>
+                <button class="chatbot-btn" id="resourcesBtn" title="Mental Health Resources">📚</button>
+                <button class="chatbot-btn" id="minimizeBtn">−</button>
+                <button class="chatbot-btn" id="closeBtn">×</button>
+            </div>
+        </div>
+
+        <!-- Resources Panel -->
+        <div class="resources-panel" id="resourcesPanel" style="display: none;">
+            <div class="resources-header">
+                <h3>Mental Health Resources</h3>
+                <button class="close-resources-btn" id="closeResourcesBtn">×</button>
+            </div>
+            <div class="resources-content">
+                <div class="resource-item">
+                    <h4>Meditation & Mindfulness</h4>
+                    <p>Learn breathing techniques and meditation practices</p>
+                    <button class="resource-btn" onclick="openYouTubeLink('https://youtu.be/grfXR6FAsI8?si=8DQVMV-RXU2yT3eb')">
+                        🧘‍♀️ Watch Video
+                    </button>
+                </div>
+                <div class="resource-item">
+                    <h4>Stress Management</h4>
+                    <p>Effective strategies to manage daily stress</p>
+                    <button class="resource-btn" onclick="openYouTubeLink('https://youtu.be/_KuUXz5gjgw?si=wDhjuUGqbmXvBksP')">
+                        😌 Watch Video
+                    </button>
+                </div>
+                <div class="resource-item">
+                    <h4>Mental Wellness Tips</h4>
+                    <p>Daily practices for better mental health</p>
+                    <button class="resource-btn" onclick="openYouTubeLink('https://youtu.be/eGVWRvNe1-A?si=Z3_pCOQdSlBdOkyS')">
+                        💚 Watch Video
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="message bot-message">
+                <div id="welcome-message" data-original-text="Hello! I'm here to support your mental health. How are you feeling today?">Hello! I'm here to support your mental health. How are you feeling today?</div>
+                <div class="motivation" id="motivation-message" data-original-text="Peace comes from within. Do not seek it without. 🧘‍♀️">"Peace comes from within. Do not seek it without." 🧘‍♀️</div>
+                <div class="joke" id="joke-message" data-original-text="🤖 Why don't robots ever panic? Because they have nerves of steel!">🤖 Why don't robots ever panic? Because they have nerves of steel!</div>
+                <div class="tts-controls">
+                    <button class="tts-control-btn" id="welcome-tts-btn" title="Speak Welcome">🔊</button>
+                    <button class="tts-control-btn" id="motivation-tts-btn" title="Speak Motivation">💭</button>
+                    <button class="tts-control-btn" id="joke-tts-btn" title="Speak Joke">😄</button>
+                    <span class="tts-status">Click to hear audio</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <button class="action-btn voice-btn" id="startListeningBtn" title="Voice Input">🎤</button>
+            <input type="text" class="user-input" id="userInput" placeholder="Type your message...">
+            <button class="action-btn send-btn" id="sendBtn" title="Send">➤</button>
+            <button class="action-btn read-btn" id="readLastMessageBtn" title="Read Last Message">🔊</button>
+            <button class="action-btn stop-btn" id="stopSpeechBtn" title="Stop Speech">■</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const chatArea = document.getElementById('chatArea');
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const startListeningBtn = document.getElementById('startListeningBtn');
+            const minimizeBtn = document.getElementById('minimizeBtn');
+            const closeBtn = document.getElementById('closeBtn');
+            const chatbot = document.querySelector('.chatbot');
+            const languageSelector = document.getElementById('languageSelector');
+            const welcomeMessage = document.getElementById('welcome-message');
+            const motivationMessage = document.getElementById('motivation-message');
+            const jokeMessage = document.getElementById('joke-message');
+
+            // Add event listeners for initial TTS buttons
+            const welcomeTtsBtn = document.getElementById('welcome-tts-btn');
+            const motivationTtsBtn = document.getElementById('motivation-tts-btn');
+            const jokeTtsBtn = document.getElementById('joke-tts-btn');
+
+            // Resources panel elements
+            const resourcesBtn = document.getElementById('resourcesBtn');
+            const resourcesPanel = document.getElementById('resourcesPanel');
+            const closeResourcesBtn = document.getElementById('closeResourcesBtn');
+
+            // State variables
+            let isListening = false;
+            let isSpeaking = false;
+            let isMinimized = false;
+            let currentLanguage = 'en';
+            let currentAudio = null;
+            let ttsQueue = [];
+            let isTTSPlaying = false;
+            const API_KEY = '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';
+            
+            // Language-specific content
+            const languageContent = {
+                en: {
+                    welcome: "Hello! I'm here to support your mental health. How are you feeling today?",
+                    placeholder: "Type your message...",
+                    quotes: [
+                        "Peace comes from within. Do not seek it without. 🧘‍♀️",
+                        "In the midst of winter, I found there was, within me, an invincible summer. ❄️☀️",
+                        "The present moment is the only time over which we have dominion. ⏰",
+                        "Breathe in peace, breathe out stress. 🌬️",
+                        "Calm mind brings inner strength and self-confidence. 💪"
+                    ],
+                    jokes: [
+                        "🤖 Why don't robots ever panic? Because they have nerves of steel!",
+                        "💻 My computer keeps playing the same song... It's a Dell!",
+                        "📱 Why did the smartphone need glasses? It lost all its contacts!"
+                    ]
+                },
+                hi: {
+                    welcome: "नमस्ते! मैं आपके मानसिक स्वास्थ्य का समर्थन करने के लिए यहां हूं। आज आप कैसा महसूस कर रहे हैं?",
+                    placeholder: "अपना संदेश टाइप करें...",
+                    quotes: [
+                        "शांति भीतर से आती है। इसे बाहर मत ढूंढो। 🧘‍♀️",
+                        "सर्दियों के बीच में, मैंने पाया कि मेरे भीतर एक अजेय गर्मी थी। ❄️☀️",
+                        "वर्तमान क्षण ही एकमात्र समय है जिस पर हमारा अधिकार है। ⏰",
+                        "शांति में सांस लें, तनाव को छोड़ें। 🌬️",
+                        "शांत मन आंतरिक शक्ति और आत्मविश्वास लाता है। 💪"
+                    ],
+                    jokes: [
+                        "🤖 रोबोट कभी घबराते क्यों नहीं? क्योंकि उनके पास स्टील की नसें हैं!",
+                        "💻 मेरा कंप्यूटर एक ही गाना बजाता रहता है... यह एक डेल है!",
+                        "📱 स्मार्टफोन को चश्मे की आवश्यकता क्यों थी? उसने अपने सभी संपर्क खो दिए!"
+                    ]
+                },
+                te: {
+                    welcome: "నమస్కారం! నేను మీ మానసిక ఆరోగ్యానికి మద్దతు ఇవ్వడానికి ఇక్కడ ఉన్నాను. ఈరోజు మీకు ఎలా అనిపిస్తుంది?",
+                    placeholder: "మీ సందేశాన్ని టైప్ చేయండి...",
+                    quotes: [
+                        "శాంతి లోపల నుండి వస్తుంది. దాన్ని బయట వెతకకండి. 🧘‍♀️",
+                        "శీతాకాలం మధ్యలో, నాలో ఒక అజేయ వేసవి ఉందని నేను కనుగొన్నాను. ❄️☀️",
+                        "ప్రస్తుత క్షణం మాత్రమే మనకు అధికారం ఉన్న సమయం. ⏰",
+                        "శాంతిని పీల్చుకోండి, ఒత్తిడిని వదిలేయండి. 🌬️",
+                        "శాంతమైన మనస్సు అంతర్గత శక్తి మరియు ఆత్మవిశ్వాసాన్ని తెస్తుంది. 💪"
+                    ],
+                    jokes: [
+                        "🤖 రోబోట్లు ఎప్పుడూ ఎందుకు భయపడరు? ఎందుకంటే వాటికి ఉక్కు నరాలు ఉంటాయి!",
+                        "💻 నా కంప్యూటర్ అదే పాటను ప్లే చేస్తుంది... ఇది ఒక డెల్!",
+                        "📱 స్మార్ట్ఫోన్కు గ్లాసెస్ ఎందుకు అవసరం? అది తన అన్ని కాంటాక్ట్లను కోల్పోయింది!"
+                    ]
+                }
+            };
+
+            // Initialize with English content
+            updateLanguageContent('en');
+
+            // Update UI content based on selected language
+            function updateLanguageContent(lang) {
+                currentLanguage = lang;
+                const content = languageContent[lang];
+                
+                // Update welcome message
+                welcomeMessage.textContent = content.welcome;
+                
+                // Update input placeholder
+                userInput.placeholder = content.placeholder;
+                
+                // Update initial motivation and joke
+                motivationMessage.textContent = `"${content.quotes[0]}"`;
+                jokeMessage.textContent = content.jokes[0];
+                
+                // Update TTS button event listeners for new language
+                welcomeTtsBtn.onclick = () => speakMessage(welcomeMessage.textContent, currentLanguage, welcomeTtsBtn);
+                motivationTtsBtn.onclick = () => speakMessage(motivationMessage.textContent, currentLanguage, motivationTtsBtn);
+                jokeTtsBtn.onclick = () => speakMessage(jokeMessage.textContent, currentLanguage, jokeTtsBtn);
+            }
+
+            // Get a random quote in current language
+            function getRandomQuote() {
+                const quotes = languageContent[currentLanguage].quotes;
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            }
+
+            // Get a random joke in current language
+            function getRandomJoke() {
+                const jokes = languageContent[currentLanguage].jokes;
+                return jokes[Math.floor(Math.random() * jokes.length)];
+            }
+
+            // Enhanced translation function with caching
+            const translationCache = new Map();
+            
+            async function translateText(text, targetLang) {
+                if (!text || targetLang === 'en') return text;
+                
+                // Check cache first
+                const cacheKey = `${text}_${targetLang}`;
+                if (translationCache.has(cacheKey)) {
+                    return translationCache.get(cacheKey);
+                }
+                
+                try {
+                    const response = await fetch('/translate_content', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text, lang: targetLang })
+                    });
+                    const data = await response.json();
+                    const translated = data.translated || text;
+                    
+                    // Cache the result
+                    translationCache.set(cacheKey, translated);
+                    return translated;
+                } catch (e) {
+                    console.error('Translation error:', e);
+                    return text;
+                }
+            }
+
+            // Translate all conversation messages
+            async function translateAllMessages(targetLang) {
+                const messages = chatArea.querySelectorAll('.message');
+                
+                for (let msg of messages) {
+                    if (msg.classList.contains('bot-message')) {
+                        // Handle bot messages with complex structure
+                        await translateBotMessage(msg, targetLang);
+                    } else {
+                        // Handle simple user messages
+                        if (!msg.dataset.originalText) {
+                            msg.dataset.originalText = msg.textContent;
+                        }
+                        const originalText = msg.dataset.originalText;
+                        const translatedText = await translateText(originalText, targetLang);
+                        msg.textContent = translatedText;
+                    }
+                }
+            }
+
+            // Translate bot message with all its components
+            async function translateBotMessage(messageElement, targetLang) {
+                // Translate main response text
+                const textElements = messageElement.querySelectorAll('div:not(.analysis-container):not(.motivation):not(.joke)');
+                if (textElements.length > 0) {
+                    const originalResponse = messageElement.dataset.originalResponse || textElements[0].textContent;
+                    if (!messageElement.dataset.originalResponse) {
+                        messageElement.dataset.originalResponse = originalResponse;
+                    }
+                    const translatedResponse = await translateText(originalResponse, targetLang);
+                    textElements[0].textContent = translatedResponse;
+                }
+                
+                // Translate motivation
+                const motivationElement = messageElement.querySelector('.motivation');
+                if (motivationElement) {
+                    const originalMotivation = messageElement.dataset.originalMotivation || motivationElement.textContent;
+                    if (!messageElement.dataset.originalMotivation) {
+                        messageElement.dataset.originalMotivation = originalMotivation;
+                    }
+                    const translatedMotivation = await translateText(originalMotivation, targetLang);
+                    motivationElement.textContent = translatedMotivation;
+                }
+                
+                // Translate joke
+                const jokeElement = messageElement.querySelector('.joke');
+                if (jokeElement) {
+                    const originalJoke = messageElement.dataset.originalJoke || jokeElement.textContent;
+                    if (!messageElement.dataset.originalJoke) {
+                        messageElement.dataset.originalJoke = originalJoke;
+                    }
+                    const translatedJoke = await translateText(originalJoke, targetLang);
+                    jokeElement.textContent = translatedJoke;
+                }
+                
+                // Translate analysis elements
+                const analysisElement = messageElement.querySelector('.analysis-container');
+                if (analysisElement) {
+                    await translateAnalysisElement(analysisElement, targetLang);
+                }
+            }
+
+            // Translate individual analysis element
+            async function translateAnalysisElement(analysisElement, targetLang) {
+                const elements = analysisElement.querySelectorAll('[data-original-text]');
+                
+                for (let element of elements) {
+                    const originalText = element.dataset.originalText;
+                    const translatedText = await translateText(originalText, targetLang);
+                    element.innerHTML = translatedText;
+                }
+            }
+
+            // Translate UI elements
+            async function translateUIElements(targetLang) {
+                // Translate welcome message
+                if (welcomeMessage.dataset.originalText) {
+                    welcomeMessage.textContent = await translateText(welcomeMessage.dataset.originalText, targetLang);
+                }
+                
+                // Translate input placeholder
+                const originalPlaceholder = "Type your message...";
+                userInput.placeholder = await translateText(originalPlaceholder, targetLang);
+                
+                // Translate motivation and joke
+                if (motivationMessage.dataset.originalText) {
+                    motivationMessage.textContent = await translateText(motivationMessage.dataset.originalText, targetLang);
+                }
+                
+                if (jokeMessage.dataset.originalText) {
+                    jokeMessage.textContent = await translateText(jokeMessage.dataset.originalText, targetLang);
+                }
+            }
+
+            // Translate analysis elements
+            async function translateAnalysisElements(targetLang) {
+                const analysisElements = document.querySelectorAll('.analysis-container');
+                
+                for (let analysis of analysisElements) {
+                    const elements = analysis.querySelectorAll('[data-original-text]');
+                    
+                    for (let element of elements) {
+                        const originalText = element.dataset.originalText;
+                        const translatedText = await translateText(originalText, targetLang);
+                        element.innerHTML = translatedText;
+                    }
+                }
+            }
+
+            // Comprehensive translation function
+            async function translateEverything(targetLang) {
+                try {
+                    // Show loading indicator
+                    const loadingMsg = document.createElement('div');
+                    loadingMsg.textContent = 'Translating...';
+                    loadingMsg.style.textAlign = 'center';
+                    loadingMsg.style.padding = '10px';
+                    loadingMsg.style.color = '#666';
+                    chatArea.appendChild(loadingMsg);
+                    
+                    // Translate all components
+                    await Promise.all([
+                        translateAllMessages(targetLang),
+                        translateUIElements(targetLang)
+                    ]);
+                    
+                    // Remove loading indicator
+                    loadingMsg.remove();
+                    
+                    // Update current language
+                    currentLanguage = targetLang;
+                    
+                    // Update speech recognition language
+                    if (recognition) {
+                        recognition.lang = targetLang === 'en' ? 'en-US' : 
+                                         targetLang === 'hi' ? 'hi-IN' : 'te-IN';
+                    }
+                    
+                } catch (error) {
+                    console.error('Translation error:', error);
+                }
+            }
+
+            // Enhanced addMessage function that stores original text
+            function addMessage(text, className) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', className);
+                messageElement.textContent = text;
+                messageElement.dataset.originalText = text; // Store original text
+                chatArea.appendChild(messageElement);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            // Enhanced addMessage function for bot responses with structure
+            function addBotMessage(responseText, analysis, motivation, joke) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'bot-message');
+                
+                // Store original texts
+                messageElement.dataset.originalResponse = responseText;
+                messageElement.dataset.originalMotivation = motivation;
+                messageElement.dataset.originalJoke = joke;
+                
+                // Add response text
+                const textElement = document.createElement('div');
+                textElement.textContent = responseText;
+                messageElement.appendChild(textElement);
+                
+                // Add analysis
+                messageElement.appendChild(addAnalysis(analysis));
+                
+                // Add motivational message
+                const motivationElement = document.createElement('div');
+                motivationElement.classList.add('motivation');
+                motivationElement.textContent = motivation;
+                messageElement.appendChild(motivationElement);
+                
+                // Add joke
+                const jokeElement = document.createElement('div');
+                jokeElement.classList.add('joke');
+                jokeElement.textContent = joke;
+                messageElement.appendChild(jokeElement);
+                
+                // Add TTS controls for this specific message
+                const ttsControls = document.createElement('div');
+                ttsControls.classList.add('tts-controls');
+                
+                // Create buttons with proper event listeners instead of inline onclick
+                const responseBtn = document.createElement('button');
+                responseBtn.classList.add('tts-control-btn');
+                responseBtn.textContent = '🔊';
+                responseBtn.title = 'Speak Response';
+                responseBtn.onclick = () => speakMessage(responseText, currentLanguage, responseBtn);
+                
+                const motivationBtn = document.createElement('button');
+                motivationBtn.classList.add('tts-control-btn');
+                motivationBtn.textContent = '💭';
+                motivationBtn.title = 'Speak Motivation';
+                motivationBtn.onclick = () => speakMessage(motivation, currentLanguage, motivationBtn);
+                
+                const jokeBtn = document.createElement('button');
+                jokeBtn.classList.add('tts-control-btn');
+                jokeBtn.textContent = '😄';
+                jokeBtn.title = 'Speak Joke';
+                jokeBtn.onclick = () => speakMessage(joke, currentLanguage, jokeBtn);
+                
+                const statusSpan = document.createElement('span');
+                statusSpan.classList.add('tts-status');
+                statusSpan.textContent = 'Click to hear audio';
+                
+                ttsControls.appendChild(responseBtn);
+                ttsControls.appendChild(motivationBtn);
+                ttsControls.appendChild(jokeBtn);
+                ttsControls.appendChild(statusSpan);
+                
+                messageElement.appendChild(ttsControls);
+                
+                // Add to chat
+                chatArea.appendChild(messageElement);
+                chatArea.scrollTop = chatArea.scrollHeight;
+                
+                return messageElement;
+            }
+
+            // Initialize speech recognition if available
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+            
+            if (recognition) {
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                // Set language based on selection
+                recognition.lang = currentLanguage === 'en' ? 'en-US' : 
+                                    currentLanguage === 'hi' ? 'hi-IN' : 'te-IN';
+                
+                recognition.onstart = function() {
+                    isListening = true;
+                    startListeningBtn.classList.add('listening');
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    userInput.value = transcript;
+                };
+                
+                recognition.onend = function() {
+                    isListening = false;
+                    startListeningBtn.classList.remove('listening');
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    isListening = false;
+                    startListeningBtn.classList.remove('listening');
+                    addMessage(getTranslation('voice_error'), 'bot-message');
+                };
+            } else {
+                startListeningBtn.disabled = true;
+                startListeningBtn.title = "Voice input not supported";
+            }
+
+            // Update recognition language when selector changes
+            languageSelector.addEventListener('change', function() {
+                const lang = this.value;
+                updateLanguageContent(lang);
+                
+                if (recognition) {
+                    recognition.lang = lang === 'en' ? 'en-US' : 
+                                     lang === 'hi' ? 'hi-IN' : 'te-IN';
+                }
+            });
+
+            // Translation helper function
+            function getTranslation(key) {
+                const translations = {
+                    'voice_error': {
+                        'en': "Sorry, there was an error with voice recognition. Please try again.",
+                        'hi': "क्षमा करें, ध्वनि पहचान में त्रुटि हुई। कृपया पुनः प्रयास करें।",
+                        'te': "క్షమించండి, వాయిస్ గుర్తింపులో లోపం ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి."
+                    },
+                    'no_messages': {
+                        'en': "No messages to read yet.",
+                        'hi': "अभी तक कोई संदेश नहीं है।",
+                        'te': "ఇంకా చదవడానికి సందేశాలు లేవు."
+                    }
+                };
+                
+                return translations[key][currentLanguage] || translations[key]['en'];
+            }
+
+            // Show typing indicator
+            function showTypingIndicator() {
+                const typingElement = document.createElement('div');
+                typingElement.classList.add('typing-indicator');
+                typingElement.id = 'typingIndicator';
+                typingElement.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                chatArea.appendChild(typingElement);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            // Remove typing indicator
+            function removeTypingIndicator() {
+                const typingElement = document.getElementById('typingIndicator');
+                if (typingElement) {
+                    typingElement.remove();
+                }
+            }
+
+            // Enhanced TTS functions
+            async function speakTextServer(text, lang, button) {
+                try {
+                    // Show TTS loading state
+                    const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                    if (ttsControls) {
+                        const status = ttsControls.querySelector('.tts-status');
+                        if (status) status.textContent = 'Loading audio...';
+                    }
+                    
+                    const response = await fetch('/speak_text', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text, lang: lang })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('TTS request failed');
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Stop any current audio
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio = null;
+                    }
+                    
+                    // Create new audio element
+                    currentAudio = new Audio(audioUrl);
+                    currentAudio.lang = lang;
+                    
+                    // Set up event listeners
+                    currentAudio.onloadstart = () => {
+                        const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                        if (ttsControls) {
+                            const status = ttsControls.querySelector('.tts-status');
+                            if (status) status.textContent = 'Playing...';
+                        }
+                        isTTSPlaying = true;
+                    };
+                    
+                    currentAudio.onplay = () => {
+                        const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                        if (ttsControls) {
+                            const status = ttsControls.querySelector('.tts-status');
+                            if (status) status.textContent = 'Playing...';
+                        }
+                        isTTSPlaying = true;
+                    };
+                    
+                    currentAudio.onpause = () => {
+                        const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                        if (ttsControls) {
+                            const status = ttsControls.querySelector('.tts-status');
+                            if (status) status.textContent = 'Paused';
+                        }
+                        isTTSPlaying = false;
+                    };
+                    
+                    currentAudio.onended = () => {
+                        const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                        if (ttsControls) {
+                            const status = ttsControls.querySelector('.tts-status');
+                            if (status) status.textContent = 'Click to hear audio';
+                        }
+                        isTTSPlaying = false;
+                        currentAudio = null;
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    currentAudio.onerror = (error) => {
+                        console.error('Audio playback error:', error);
+                        const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                        if (ttsControls) {
+                            const status = ttsControls.querySelector('.tts-status');
+                            if (status) status.textContent = 'Error loading audio';
+                        }
+                        isTTSPlaying = false;
+                        currentAudio = null;
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    // Play the audio
+                    await currentAudio.play();
+                    
+                } catch (error) {
+                    console.error('TTS error:', error);
+                    const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                    if (ttsControls) {
+                        const status = ttsControls.querySelector('.tts-status');
+                        if (status) status.textContent = 'Error loading audio';
+                    }
+                    isTTSPlaying = false;
+                    
+                    // Fallback to browser TTS
+                    speakText(text);
+                }
+            }
+
+            // Function to speak individual message components
+            function speakMessage(text, lang, button) {
+                if (currentAudio && isTTSPlaying) {
+                    // Stop current audio if playing
+                    currentAudio.pause();
+                    currentAudio = null;
+                    isTTSPlaying = false;
+                }
+                
+                // Update status for the specific message
+                const ttsControls = button ? button.closest('.tts-controls') : document.querySelector('.tts-controls');
+                if (ttsControls) {
+                    const status = ttsControls.querySelector('.tts-status');
+                    if (status) status.textContent = 'Loading...';
+                }
+                
+                // Use server-side TTS
+                speakTextServer(text, lang, button);
+            }
+
+            // Make speakMessage globally accessible
+            window.speakMessage = speakMessage;
+
+            // YouTube link functions
+            function openYouTubeLink(url) {
+                // Open YouTube link in a new tab
+                window.open(url, '_blank');
+                
+                // Add a message to the chat about the resource
+                const resourceMessages = {
+                    'en': "I've opened a helpful mental health resource for you. Check it out in the new tab!",
+                    'hi': "मैंने आपके लिए एक उपयोगी मानसिक स्वास्थ्य संसाधन खोला है। नई टैब में इसे देखें!",
+                    'te': "నేను మీ కోసం ఒక ఉపయోగకరమైన మానసిక ఆరోగ్య వనరును తెరిచాను. కొత్త ట్యాబ్‌లో దీన్ని చూడండి!"
+                };
+                
+                const message = resourceMessages[currentLanguage] || resourceMessages['en'];
+                addMessage(message, 'bot-message');
+                
+                // Close the resources panel
+                closeResourcesPanel();
+            }
+
+            // Make openYouTubeLink globally accessible
+            window.openYouTubeLink = openYouTubeLink;
+
+            // Resources panel functions
+            function openResourcesPanel() {
+                resourcesPanel.style.display = 'flex';
+                // Add a subtle animation
+                resourcesPanel.style.opacity = '0';
+                setTimeout(() => {
+                    resourcesPanel.style.opacity = '1';
+                }, 10);
+            }
+
+            function closeResourcesPanel() {
+                resourcesPanel.style.opacity = '0';
+                setTimeout(() => {
+                    resourcesPanel.style.display = 'none';
+                }, 300);
+            }
+
+            // Toggle TTS playback
+            function toggleTTS() {
+                if (!currentAudio) {
+                    // No audio playing, read the last message
+                    const botMessages = document.querySelectorAll('.bot-message');
+                    if (botMessages.length > 0) {
+                        const lastMessage = Array.from(botMessages)
+                            .filter(msg => !msg.querySelector('.analysis-container'))
+                            .pop();
+                        
+                        if (lastMessage) {
+                            const text = lastMessage.textContent.trim();
+                            speakTextServer(text, currentLanguage);
+                        }
+                    }
+                } else if (isTTSPlaying) {
+                    // Pause current audio
+                    currentAudio.pause();
+                } else {
+                    // Resume current audio
+                    currentAudio.play();
+                }
+            }
+
+            // Stop all TTS
+            function stopAllTTS() {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    currentAudio = null;
+                }
+                
+                if (speechSynthesis && speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+                
+                // Update all TTS status indicators
+                const ttsControls = document.querySelectorAll('.tts-controls');
+                ttsControls.forEach(control => {
+                    const status = control.querySelector('.tts-status');
+                    if (status) status.textContent = 'Click to hear audio';
+                });
+                
+                isTTSPlaying = false;
+                isSpeaking = false;
+                readLastMessageBtn.classList.remove('active');
+            }
+
+            // Enhanced speak text function with language support
+            function speakText(text) {
+                if (!speechSynthesis) {
+                    console.warn('Speech synthesis not supported');
+                    return;
+                }
+
+                // Cancel any ongoing speech
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+
+                // Create new utterance
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Configure speech parameters
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 0.8;
+
+                // Set language based on current selection
+                utterance.lang = currentLanguage === 'en' ? 'en-US' : 
+                                 currentLanguage === 'hi' ? 'hi-IN' : 'te-IN';
+
+                // Get available voices and try to find one for the current language
+                const voices = speechSynthesis.getVoices();
+                let voice = voices.find(v => v.lang === utterance.lang);
+                
+                if (!voice) {
+                    // Fallback to any voice that matches the language family
+                    const langPrefix = currentLanguage === 'en' ? 'en-' : 
+                                     currentLanguage === 'hi' ? 'hi-' : 'te-';
+                    voice = voices.find(v => v.lang.startsWith(langPrefix));
+                }
+                
+                if (voice) {
+                    utterance.voice = voice;
+                }
+
+                // Event handlers
+                utterance.onstart = function() {
+                    isSpeaking = true;
+                    readLastMessageBtn.classList.add('active');
+                };
+
+                utterance.onend = function() {
+                    isSpeaking = false;
+                    readLastMessageBtn.classList.remove('active');
+                };
+
+                utterance.onerror = function(event) {
+                    console.error('Speech synthesis error:', event);
+                    isSpeaking = false;
+                    readLastMessageBtn.classList.remove('active');
+                };
+
+                // Speak the text
+                try {
+                    speechSynthesis.speak(utterance);
+                } catch (error) {
+                    console.error('Error speaking text:', error);
+                }
+            }
+
+            // Read the last bot message
+            function readLastMessage() {
+                if (isSpeaking || isTTSPlaying) {
+                    stopAllTTS();
+                    return;
+                }
+
+                const botMessages = document.querySelectorAll('.bot-message');
+                if (botMessages.length > 0) {
+                    // Get the last message, excluding analysis containers
+                    const lastMessage = Array.from(botMessages)
+                        .filter(msg => !msg.querySelector('.analysis-container'))
+                        .pop();
+                    
+                    if (lastMessage) {
+                        const text = lastMessage.textContent.trim();
+                        speakTextServer(text, currentLanguage);
+                    } else {
+                        speakTextServer(getTranslation('no_messages'), currentLanguage);
+                    }
+                } else {
+                    speakTextServer(getTranslation('no_messages'), currentLanguage);
+                }
+            }
+
+            // Toggle voice recognition
+            function toggleVoiceRecognition() {
+                if (!recognition) {
+                    addMessage(getTranslation('voice_error'), 'bot-message');
+                    return;
+                }
+
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (error) {
+                        console.error('Error starting recognition:', error);
+                        addMessage(getTranslation('voice_error'), 'bot-message');
+                    }
+                }
+            }
+
+            // Analyze message for depression using ML/DL concepts
+            function analyzeMessageForDepression(message) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        // Enhanced keyword analysis with weights
+                        const depressionKeywords = {
+                            'sad': 0.3,
+                            'depressed': 0.7,
+                            'hopeless': 0.8,
+                            'lonely': 0.5,
+                            'empty': 0.6,
+                            'worthless': 0.75,
+                            'guilty': 0.4,
+                            'tired': 0.3,
+                            'suicide': 0.9,
+                            'die': 0.8,
+                            'death': 0.7,
+                            'pain': 0.5,
+                            'cry': 0.4,
+                            'miserable': 0.7,
+                            'hate': 0.6,
+                            'failure': 0.5,
+                            'anxiety': 0.6,
+                            'worried': 0.4,
+                            'stress': 0.5,
+                            'overwhelmed': 0.6,
+                            'fatigue': 0.3,
+                            'numb': 0.4,
+                            'helpless': 0.7,
+                            'despair': 0.8,
+                            'grief': 0.6,
+                            'heartbroken': 0.7,
+                            'lost': 0.5,
+                            'alone': 0.6,
+                            // Hindi keywords
+                            'उदास': 0.5,
+                            'निराश': 0.7,
+                            'अकेला': 0.6,
+                            'थकान': 0.4,
+                            'तनाव': 0.5,
+                            'चिंता': 0.6,
+                            // Telugu keywords
+                            'విచారంగా': 0.5,
+                            'నిరాశ': 0.7,
+                            'ఒంటరిగా': 0.6,
+                            'అలసట': 0.4,
+                            'ఒత్తిడి': 0.5,
+                            'ఆందోళన': 0.6
+                        };
+
+                        const positiveKeywords = {
+                            'happy': -0.5,
+                            'joy': -0.6,
+                            'good': -0.4,
+                            'great': -0.5,
+                            'excited': -0.4,
+                            'love': -0.7,
+                            'hope': -0.6,
+                            'better': -0.4,
+                            'improve': -0.3,
+                            'progress': -0.3,
+                            'peace': -0.5,
+                            'calm': -0.4,
+                            'relaxed': -0.4,
+                            'content': -0.5,
+                            'grateful': -0.6,
+                            'thankful': -0.5,
+                            'optimistic': -0.6,
+                            'confident': -0.5,
+                            'proud': -0.4,
+                            'success': -0.5,
+                            // Hindi positive keywords
+                            'खुश': -0.5,
+                            'आनंद': -0.6,
+                            'अच्छा': -0.4,
+                            'प्रेम': -0.7,
+                            'आशा': -0.6,
+                            'शांति': -0.5,
+                            // Telugu positive keywords
+                            'సంతోషంగా': -0.5,
+                            'ఆనందం': -0.6,
+                            'మంచి': -0.4,
+                            'ప్రేమ': -0.7,
+                            'ఆశ': -0.6,
+                            'శాంతి': -0.5
+                        };
+                        
+                        // Negation words in multiple languages
+                        const negationWords = [
+                            'not', 'no', 'never', 'don\'t', 'doesn\'t', 'cant', 'cannot', 'won\'t', 'isnt', 'aren\'t',
+                            'नहीं', 'मत', 'कभी नहीं',
+                            'కాదు', 'ఏమాత్రం', 'ఎప్పుడూ'
+                        ];
+                        
+                        // Tokenize the message into sentences and words
+                        const sentences = message.toLowerCase().split(/[.!?]+/);
+                        let score = 0;
+                        const contributingWords = [];
+                        
+                        sentences.forEach(sentence => {
+                            const words = sentence.trim().split(/\s+/);
+                            let hasNegation = false;
+                            
+                            // Check for negations in the sentence
+                            words.forEach((word, index) => {
+                                // Clean the word from punctuation
+                                const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '');
+                                
+                                // Check if word is a negation
+                                if (negationWords.includes(cleanWord)) {
+                                    hasNegation = true;
+                                }
+                                
+                                // Apply sentiment based on negation context
+                                if (depressionKeywords[cleanWord]) {
+                                    let contribution = depressionKeywords[cleanWord];
+                                    if (hasNegation) {
+                                        contribution = -contribution; // Reverse the sentiment if negated
+                                    }
+                                    score += contribution;
+                                    contributingWords.push({
+                                        word: cleanWord,
+                                        contribution: contribution,
+                                        positive: hasNegation,
+                                        context: hasNegation ? 'Negated' : 'Direct'
+                                    });
+                                } else if (positiveKeywords[cleanWord]) {
+                                    let contribution = positiveKeywords[cleanWord];
+                                    if (hasNegation) {
+                                        contribution = -contribution; // Reverse the sentiment if negated
+                                    }
+                                    score += contribution;
+                                    contributingWords.push({
+                                        word: cleanWord,
+                                        contribution: hasNegation ? contribution : -contribution,
+                                        positive: !hasNegation,
+                                        context: hasNegation ? 'Negated' : 'Direct'
+                                    });
+                                }
+                            });
+                        });
+
+                        // Normalize score to 0-100%
+                        score = Math.min(Math.max((score + 1) * 50, 0), 100);
+
+                        // Sort contributing words by absolute contribution
+                        contributingWords.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+
+                        // Take top 5 contributing words
+                        const topContributors = contributingWords.slice(0, 5);
+
+                        // Determine depression level
+                        let depressionLevel = '';
+                        if (score < 30) {
+                            depressionLevel = currentLanguage === 'en' ? 'Depression Low risk' :
+                                           currentLanguage === 'hi' ? 'अवसाद कम जोखिम' : 'డిప్రెషన్ తక్కువ ప్రమాదం';
+                        } else if (score < 60) {
+                            depressionLevel = currentLanguage === 'en' ? 'Depression Moderate risk' :
+                                           currentLanguage === 'hi' ? 'अवसाद मध्यम जोखिम' : 'డిప్రెషన్ మధ్యస్థ ప్రమాదం';
+                        } else {
+                            depressionLevel = currentLanguage === 'en' ? 'Depression High risk' :
+                                           currentLanguage === 'hi' ? 'अवसाद उच्च जोखिम' : 'డిప్రెషన్ ఎక్కువ ప్రమాదం';
+                        }
+
+                        resolve({
+                            score: score,
+                            isDepressed: score >= 50,
+                            depressionLevel: depressionLevel,
+                            topContributors: topContributors,
+                            confidence: Math.min(Math.abs(score - 50) / 50, 1) * 100
+                        });
+                    }, 500); // Simulate quick ML processing
+                });
+            }
+
+            // Fetch response from OpenRouter API
+            async function fetchOpenRouterResponse(message, analysis) {
+                // Prepare the prompt based on analysis and language
+                let prompt = `The user said: "${message}". `;
+                
+                if (analysis.isDepressed) {
+                    prompt += `Based on their words, they appear to be experiencing depression (${analysis.score.toFixed(1)}% likelihood). `;
+                    prompt += `Key words contributing to this assessment: ${analysis.topContributors.map(w => w.word).join(', ')}. `;
+                    prompt += `Provide a compassionate, supportive response that validates their feelings and offers hope. `;
+                    prompt += `Keep the response brief (1-2 sentences) and suggest simple coping strategies if appropriate.`;
+                } else {
+                    prompt += `Based on their words, they don't appear to be depressed (${analysis.score.toFixed(1)}% likelihood). `;
+                    prompt += `Provide an appropriate supportive response to their message (1-2 sentences).`;
+                }
+                
+                // Add language instruction
+                prompt += ` Respond in ${currentLanguage === 'en' ? 'English' : currentLanguage === 'hi' ? 'Hindi' : 'Telugu'}.`;
+                
+                try {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${API_KEY}`,
+                            "HTTP-Referer": window.location.href,
+                            "X-Title": "Mental Health Support Chatbot",
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            "model": "deepseek/deepseek-chat:free",
+                            "messages": [
+                                {
+                                    "role": "system",
+                                    "content": "You are a compassionate mental health support assistant. Provide empathetic, non-judgmental responses. Keep responses concise (1-2 sentences) but supportive. Offer simple coping strategies if appropriate."
+                                },
+                                {
+                                    "role": "user",
+                                    "content": prompt
+                                }
+                            ],
+                            "temperature": 0.7,
+                            "max_tokens": 100
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    return {
+                        text: data.choices[0].message.content,
+                        analysis: analysis
+                    };
+                } catch (error) {
+                    console.error('Error fetching from OpenRouter:', error);
+                    // Fallback response if API fails
+                    const fallbackResponses = {
+                        en: {
+                            depressed: "I hear that you're struggling. Remember, it's okay to feel this way. Would you like to talk more about what's on your mind?",
+                            not_depressed: "Thanks for sharing how you're feeling. I'm here to listen if you'd like to talk more."
+                        },
+                        hi: {
+                            depressed: "मैं समझता हूं कि आप संघर्ष कर रहे हैं। याद रखें, इस तरह महसूस करना ठीक है। क्या आप अपने मन की बात और अधिक साझा करना चाहेंगे?",
+                            not_depressed: "अपनी भावनाओं को साझा करने के लिए धन्यवाद। यदि आप और बात करना चाहते हैं तो मैं यहां सुनने के लिए हूं।"
+                        },
+                        te: {
+                            depressed: "మీరు కష్టపడుతున్నారని నేను విన్నాను. గుర్తుంచుకోండి, ఈ విధంగా అనుభూతి చెందడం సరే. మీ మనస్సులో ఉన్న దాని గురించి మరింత మాట్లాడాలనుకుంటున్నారా?",
+                            not_depressed: "మీరు ఎలా అనుభూతి చెందుతున్నారో పంచుకున్నందుకు ధన్యవాదాలు. మీరు మరింత మాట్లాడాలనుకుంటే నేను వినడానికి ఇక్కడ ఉన్నాను."
+                        }
+                    };
+                    
+                    return {
+                        text: analysis.isDepressed ? 
+                            fallbackResponses[currentLanguage].depressed :
+                            fallbackResponses[currentLanguage].not_depressed,
+                        analysis: analysis
+                    };
+                }
+            }
+
+            // Add analysis visualization
+            function addAnalysis(analysis) {
+                const analysisElement = document.createElement('div');
+                analysisElement.classList.add('analysis-container');
+                
+                // Translation for analysis section
+                const analysisTranslations = {
+                    en: {
+                        title: "Mental Health Analysis",
+                        indicator: "Depression Indicator",
+                        status: "Status",
+                        factors: "Key Contributing Factors",
+                        increase: "↑ = increases depression likelihood",
+                        decrease: "↓ = decreases depression likelihood"
+                    },
+                    hi: {
+                        title: "मानसिक स्वास्थ्य विश्लेषण",
+                        indicator: "अवसाद संकेतक",
+                        status: "स्थिति",
+                        factors: "मुख्य योगदान कारक",
+                        increase: "↑ = अवसाद की संभावना बढ़ाता है",
+                        decrease: "↓ = अवसाद की संभावना कम करता है"
+                    },
+                    te: {
+                        title: "మానసిక ఆరోగ్య విశ్లేషణ",
+                        indicator: "డిప్రెషన్ సూచిక",
+                        status: "స్థితి",
+                        factors: "ప్రధాన సహాయక కారకాలు",
+                        increase: "↑ = డిప్రెషన్ సంభావ్యతను పెంచుతుంది",
+                        decrease: "↓ = డిప్రెషన్ సంభావ్యతను తగ్గిస్తుంది"
+                    }
+                };
+                
+                const trans = analysisTranslations[currentLanguage] || analysisTranslations.en;
+                
+                let html = `
+                    <div class="analysis-title" data-original-text="${trans.title}">${trans.title}</div>
+                    <div data-original-text="${trans.indicator}: <strong>${analysis.score.toFixed(1)}%</strong>">${trans.indicator}: <strong>${analysis.score.toFixed(1)}%</strong></div>
+                    <div data-original-text="${trans.status}: <strong>${analysis.depressionLevel}</strong>">${trans.status}: <strong>${analysis.depressionLevel}</strong></div>
+                    <div class="depression-meter">
+                        <div class="depression-level" style="width: ${analysis.score}%"></div>
+                    </div>
+                `;
+                
+                if (analysis.topContributors.length > 0) {
+                    html += `
+                        <div class="word-contributions">
+                            <div class="analysis-title" data-original-text="${trans.factors}:">${trans.factors}:</div>
+                            ${analysis.topContributors.map(word => `
+                                <div class="word-item">
+                                    <span class="word">${word.word}</span>
+                                    <span class="contribution ${word.positive ? 'positive' : 'negative'}">
+                                        ${word.positive ? '↓' : '↑'} ${(Math.abs(word.contribution) * 100).toFixed(1)}%
+                                        <small>(${word.context})</small>
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px;" data-original-text="<span class='negative'>↑</span> = ${trans.increase} <span class='positive'>↓</span> = ${trans.decrease}">
+                            <span class="negative">↑</span> = ${trans.increase}
+                            <span class="positive">↓</span> = ${trans.decrease}
+                        </div>
+                    `;
+                }
+                
+                analysisElement.innerHTML = html;
+                
+                // Store original analysis data for translation
+                analysisElement.dataset.originalAnalysis = JSON.stringify({
+                    score: analysis.score,
+                    depressionLevel: analysis.depressionLevel,
+                    topContributors: analysis.topContributors,
+                    translations: trans
+                });
+                
+                return analysisElement;
+            }
+
+            // Send message function
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+
+                // Add user message to chat
+                addMessage(message, 'user-message');
+                userInput.value = '';
+
+                // Show typing indicator
+                showTypingIndicator();
+
+                try {
+                    // First analyze the message for depression
+                    const analysis = await analyzeMessageForDepression(message);
+                    
+                    // Then get the supportive response
+                    const response = await fetchOpenRouterResponse(message, analysis);
+                    
+                    // Remove typing indicator
+                    removeTypingIndicator();
+                    
+                    // Get random quote and joke in current language
+                    const motivation = getRandomQuote();
+                    const joke = getRandomJoke();
+                    
+                    // Create bot message with all components
+                    const messageElement = addBotMessage(response.text, response.analysis, motivation, joke);
+                    
+                    // Speak the response using server-side TTS
+                    speakTextServer(response.text, currentLanguage);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    removeTypingIndicator();
+                    const errorMessages = {
+                        en: "Sorry, I'm having trouble connecting to the service. Please try again later.",
+                        hi: "क्षमा करें, मुझे सेवा से जुड़ने में परेशानी हो रही है। कृपया बाद में पुनः प्रयास करें।",
+                        te: "క్షమించండి, సేవకు కనెక్ట్ అవ్వడంలో నాకు ఇబ్బంది ఉంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి."
+                    };
+                    addMessage(errorMessages[currentLanguage] || errorMessages.en, 'bot-message');
+                }
+            }
+
+            // Event listeners
+            sendBtn.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            startListeningBtn.addEventListener('click', toggleVoiceRecognition);
+            readLastMessageBtn.addEventListener('click', readLastMessage);
+            stopSpeechBtn.addEventListener('click', stopAllTTS);
+            
+            // Add event listeners for initial TTS buttons
+            welcomeTtsBtn.addEventListener('click', () => speakMessage(welcomeMessage.textContent, currentLanguage, welcomeTtsBtn));
+            motivationTtsBtn.addEventListener('click', () => speakMessage(motivationMessage.textContent, currentLanguage, motivationTtsBtn));
+            jokeTtsBtn.addEventListener('click', () => speakMessage(jokeMessage.textContent, currentLanguage, jokeTtsBtn));
+            
+            // Resources panel event listeners
+            resourcesBtn.addEventListener('click', openResourcesPanel);
+            closeResourcesBtn.addEventListener('click', closeResourcesPanel);
+            
+            // Close resources panel when clicking outside
+            resourcesPanel.addEventListener('click', function(e) {
+                if (e.target === resourcesPanel) {
+                    closeResourcesPanel();
+                }
+            });
+            
+            minimizeBtn.addEventListener('click', function() {
+                chatbot.classList.toggle('minimized');
+                isMinimized = !isMinimized;
+                minimizeBtn.textContent = isMinimized ? '+' : '−';
+            });
+
+            closeBtn.addEventListener('click', function() {
+                chatbot.classList.add('hidden');
+            });
+
+            // Handle page visibility changes for speech synthesis
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden && speechSynthesis.speaking) {
+                    speechSynthesis.pause();
+                } else if (!document.hidden && speechSynthesis.paused) {
+                    speechSynthesis.resume();
+                }
+            });
+
+            // Load voices when they become available
+            if (speechSynthesis) {
+                speechSynthesis.onvoiceschanged = function() {
+                    console.log('Voices loaded');
+                };
+            }
+
+            // Listen for language change
+            languageSelector.addEventListener('change', async function() {
+                const lang = this.value;
+                await translateEverything(lang);
+            });
+        });
+    </script>
+</body>
+</html>
