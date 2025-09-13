@@ -6,6 +6,7 @@ import time
 import os
 import io
 import tempfile
+import re
 
 app = Flask(__name__)
 
@@ -31,130 +32,6 @@ language_codes = {
     'kn': 'kn',
     'gu': 'gu',
     'pa': 'pa'
-}
-
-# Language content with translations
-language_content = {
-    'en': {
-        'welcome': "Hello! I'm here to support your mental health. How are you feeling today?",
-        'placeholder': "Type your message...",
-        'quotes': [
-            "Peace comes from within. Do not seek it without. 🧘‍♀️",
-            "In the midst of winter, I found there was, within me, an invincible summer. ❄️☀️",
-            "The present moment is the only time over which we have dominion. ⏰",
-            "Breathe in peace, breathe out stress. 🌬️",
-            "Calm mind brings inner strength and self-confidence. 💪"
-        ],
-        'jokes': [
-            "🤖 Why don't robots ever panic? Because they have nerves of steel!",
-            "💻 My computer keeps playing the same song... It's a Dell!",
-            "📱 Why did the smartphone need glasses? It lost all its contacts!"
-        ],
-        'analysis': {
-            'title': "Mental Health Analysis",
-            'indicator': "Depression Indicator",
-            'status': "Status",
-            'factors': "Key Contributing Factors",
-            'increase': "↑ = increases depression likelihood",
-            'decrease': "↓ = decreases depression likelihood"
-        }
-    },
-    'hi': {
-        'welcome': "नमस्ते! मैं आपके मानसिक स्वास्थ्य का समर्थन करने के लिए यहां हूं। आज आप कैसा महसूस कर रहे हैं?",
-        'placeholder': "अपना संदेश टाइप करें...",
-        'quotes': [
-            "शांति भीतर से आती है। इसे बाहर मत ढूंढो। 🧘‍♀️",
-            "सर्दियों के बीच में, मैंने पाया कि मेरे भीतर एक अजेय गर्मी थी। ❄️☀️",
-            "वर्तमान क्षण ही एकमात्र समय है जिस पर हमारा अधिकार है। ⏰",
-            "शांति में सांस लें, तनाव को छोड़ें। 🌬️",
-            "शांत मन आंतरिक शक्ति और आत्मविश्वास लाता है। 💪"
-        ],
-        'jokes': [
-            "🤖 रोबोट कभी घबराते क्यों नहीं? क्योंकि उनके पास स्टील की नसें हैं!",
-            "💻 मेरा कंप्यूटर एक ही गाना बजाता रहता है... यह एक डेल है!",
-            "📱 स्मार्टफोन को चश्मे की आवश्यकता क्यों थी? उसने अपने सभी संपर्क खो दिए!"
-        ],
-        'analysis': {
-            'title': "मानसिक स्वास्थ्य विश्लेषण",
-            'indicator': "अवसाद संकेतक",
-            'status': "स्थिति",
-            'factors': "मुख्य योगदान कारक",
-            'increase': "↑ = अवसाद की संभावना बढ़ाता है",
-            'decrease': "↓ = अवसाद की संभावना कम करता है"
-        }
-    },
-    'te': {
-        'welcome': "నమస్కారం! నేను మీ మానసిక ఆరోగ్యానికి మద్దతు ఇవ్వడానికి ఇక్కడ ఉన్నాను. ఈరోజు మీకు ఎలా అనిపిస్తుంది?",
-        'placeholder': "మీ సందేశాన్ని టైప్ చేయండి...",
-        'quotes': [
-            "శాంతి లోపల నుండి వస్తుంది. దాన్ని బయట వెతకకండి. 🧘‍♀️",
-            "శీతాకాలం మధ్యలో, నాలో ఒక అజేయ వేసవి ఉందని నేను కనుగొన్నాను. ❄️☀️",
-            "ప్రస్తుత క్షణం మాత్రమే మనకు అధికారం ఉన్న సమయం. ⏰",
-            "శాంతిని పీల్చుకోండి, ఒత్తిడిని వదిలేయండి. 🌬️",
-            "శాంతమైన మనస్సు అంతర్గత శక్తి మరియు ఆత్మవిశ్వాసాన్ని తెస్తుంది. 💪"
-        ],
-        'jokes': [
-            "🤖 రోబోట్లు ఎప్పుడూ ఎందుకు భయపడరు? ఎందుకంటే వాటికి ఉక్కు నరాలు ఉంటాయి!",
-            "💻 నా కంప్యూటర్ అదే పాటను ప్లే చేస్తుంది... ఇది ఒక డెల్!",
-            "📱 స్మార్ట్ఫోన్కు గ్లాసెస్ ఎందుకు అవసరం? అది తన అన్ని కాంటాక్ట్లను కోల్పోయింది!"
-        ],
-        'analysis': {
-            'title': "మానసిక ఆరోగ్య విశ్లేషణ",
-            'indicator': "డిప్రెషన్ సూచిక",
-            'status': "స్థితి",
-            'factors': "ప్రధాన సహాయక కారకాలు",
-            'increase': "↑ = డిప్రెషన్ సంభావ్యతను పెంచుతుంది",
-            'decrease': "↓ = డిప్రెషన్ సంభావ్యతను తగ్గిస్తుంది"
-        }
-    },
-    'es': {
-        'welcome': "¡Hola! Estoy aquí para apoyar tu salud mental. ¿Cómo te sientes hoy?",
-        'placeholder': "Escribe tu mensaje...",
-        'quotes': [
-            "La paz viene de dentro. No la busques fuera. 🧘‍♀️",
-            "En medio del invierno, encontré que había dentro de mí un verano invencible. ❄️☀️",
-            "El momento presente es el único tiempo sobre el que tenemos dominio. ⏰",
-            "Respira paz, exhala estrés. 🌬️",
-            "La mente tranquila trae fuerza interior y autoconfianza. 💪"
-        ],
-        'jokes': [
-            "🤖 ¿Por qué los robots nunca se asustan? ¡Porque tienen nervios de acero!",
-            "💻 Mi computadora sigue tocando la misma canción... ¡Es una Dell!",
-            "📱 ¿Por qué el smartphone necesitaba gafas? ¡Perdió todos sus contactos!"
-        ],
-        'analysis': {
-            'title': "Análisis de Salud Mental",
-            'indicator': "Indicador de Depresión",
-            'status': "Estado",
-            'factors': "Factores Contribuyentes Clave",
-            'increase': "↑ = aumenta la probabilidad de depresión",
-            'decrease': "↓ = disminuye la probabilidad de depresión"
-        }
-    },
-    'fr': {
-        'welcome': "Bonjour ! Je suis ici pour soutenir votre santé mentale. Comment vous sentez-vous aujourd'hui ?",
-        'placeholder': "Tapez votre message...",
-        'quotes': [
-            "La paix vient de l'intérieur. Ne la cherchez pas à l'extérieur. 🧘‍♀️",
-            "Au milieu de l'hiver, j'ai trouvé qu'il y avait en moi un été invincible. ❄️☀️",
-            "Le moment présent est le seul temps sur lequel nous avons la domination. ⏰",
-            "Inspirez la paix, expirez le stress. 🌬️",
-            "L'esprit calme apporte force intérieure et confiance en soi. 💪"
-        ],
-        'jokes': [
-            "🤖 Pourquoi les robots ne paniquent-ils jamais ? Parce qu'ils ont des nerfs d'acier !",
-            "💻 Mon ordinateur continue de jouer la même chanson... C'est un Dell !",
-            "📱 Pourquoi le smartphone avait-il besoin de lunettes ? Il a perdu tous ses contacts !"
-        ],
-        'analysis': {
-            'title': "Analyse de la Santé Mentale",
-            'indicator': "Indicateur de Dépression",
-            'status': "Statut",
-            'factors': "Facteurs Contributifs Clés",
-            'increase': "↑ = augmente la probabilité de dépression",
-            'decrease': "↓ = diminue la probabilité de dépression"
-        }
-    }
 }
 
 # Depression keywords with weights
@@ -187,7 +64,7 @@ depression_keywords = {
     }
 }
 
-# Positive keywords with weights
+# Positive keywords
 positive_keywords = {
     'en': {
         'happy': -0.5, 'joy': -0.6, 'good': -0.4, 'great': -0.5, 'excited': -0.4,
@@ -235,7 +112,48 @@ error_messages = {
     }
 }
 
+# Load motivational quotes
+def load_motivational_quotes():
+    quotes = [
+        "Peace comes from within. Do not seek it without. 🧘‍♀️",
+        "In the midst of winter, I found there was, within me, an invincible summer. ❄️☀️",
+        "The present moment is the only time over which we have dominion. ⏰",
+        "Breathe in peace, breathe out stress. 🌬️",
+        "Calm mind brings inner strength and self-confidence. 💪"
+    ]
+    try:
+        if os.path.exists('motiv_quotes.txt'):
+            with open('motiv_quotes.txt', 'r', encoding='utf-8') as f:
+                file_quotes = [line.strip() for line in f.readlines() if line.strip()]
+                if file_quotes:
+                    quotes.extend(file_quotes)
+    except Exception as e:
+        print(f"Error loading quotes: {e}")
+    return quotes
+
+# Load jokes
+def load_jokes():
+    jokes = [
+        "🤖 Why don't robots ever panic? Because they have nerves of steel!",
+        "💻 My computer keeps playing the same song... It's a Dell!",
+        "📱 Why did the smartphone need glasses? It lost all its contacts!"
+    ]
+    try:
+        if os.path.exists('jokes.txt'):
+            with open('jokes.txt', 'r', encoding='utf-8') as f:
+                file_jokes = [line.strip() for line in f.readlines() if line.strip()]
+                if file_jokes:
+                    jokes.extend(file_jokes)
+    except Exception as e:
+        print(f"Error loading jokes: {e}")
+    return jokes
+
+motivational_quotes = load_motivational_quotes()
+jokes_list = load_jokes()
+
 def translate_text(text, dest_lang):
+    if dest_lang == 'en' or not text:
+        return text
     try:
         translator = GoogleTranslator(source='auto', target=dest_lang)
         translated = translator.translate(text)
@@ -244,102 +162,86 @@ def translate_text(text, dest_lang):
         print(f"Translation error: {e}")
         return text
 
-def analyze_message(message, lang):
-    # Tokenize the message into sentences and words
-    sentences = message.lower().split('.')
+def analyze_message(message, lang='en'):
+    # Clean and tokenize
+    message_lower = message.lower()
+    words = re.findall(r'\b\w+\b', message_lower)
+
     score = 0
     contributing_words = []
-    
-    for sentence in sentences:
-        words = sentence.strip().split()
-        has_negation = False
-        
-        # Check for negations in the sentence
-        for word in words:
-            clean_word = word.strip('.,!?')
-            if clean_word in negation_words.get(lang, negation_words['en']):
-                has_negation = True
-                break
-        
-        # Analyze each word
-        for word in words:
-            clean_word = word.strip('.,!?')
-            
-            # Check depression keywords
-            if clean_word in depression_keywords.get(lang, depression_keywords['en']):
-                contribution = depression_keywords[lang][clean_word]
-                if has_negation:
-                    contribution = -contribution
-                score += contribution
-                contributing_words.append({
-                    'word': clean_word,
-                    'contribution': contribution,
-                    'positive': has_negation,
-                    'context': 'Negated' if has_negation else 'Direct'
-                })
-            
-            # Check positive keywords
-            elif clean_word in positive_keywords.get(lang, positive_keywords['en']):
-                contribution = positive_keywords[lang][clean_word]
-                if has_negation:
-                    contribution = -contribution
-                score += contribution
-                contributing_words.append({
-                    'word': clean_word,
-                    'contribution': -contribution if not has_negation else contribution,
-                    'positive': not has_negation,
-                    'context': 'Negated' if has_negation else 'Direct'
-                })
-    
+
+    dep_words = depression_keywords.get(lang, depression_keywords['en'])
+    pos_words = positive_keywords.get(lang, positive_keywords['en'])
+
+    for word in words:
+        if word in dep_words:
+            contribution = dep_words[word]
+            score += contribution
+            contributing_words.append({
+                'word': word,
+                'contribution': contribution,
+                'positive': False
+            })
+        elif word in pos_words:
+            contribution = pos_words[word]
+            score += contribution
+            contributing_words.append({
+                'word': word,
+                'contribution': contribution,
+                'positive': True
+            })
+
     # Normalize score to 0-100%
-    score = min(max((score + 1) * 50, 0), 100)
-    
-    # Sort contributing words by absolute contribution
+    normalized_score = min(max((score + 1) * 50, 0), 100)
+
+    # Sort and get top contributors
     contributing_words.sort(key=lambda x: abs(x['contribution']), reverse=True)
-    
-    # Take top 5 contributing words
     top_contributors = contributing_words[:5]
-    
-    # Determine depression level
-    if score < 30:
-        depression_level = "Depression Low risk"
-    elif score < 60:
-        depression_level = "Depression Moderate risk"
+
+    # Determine risk level
+    if normalized_score < 30:
+        risk_level = "Low Risk"
+    elif normalized_score < 60:
+        risk_level = "Moderate Risk"
     else:
-        depression_level = "Depression High risk"
-    
-    # Translate depression level if not English
-    if lang != 'en':
-        depression_level = translate_text(depression_level, lang)
-    
+        risk_level = "High Risk"
+
     return {
-        'score': score,
-        'isDepressed': score >= 50,
-        'depressionLevel': depression_level,
+        'score': normalized_score,
+        'isDepressed': normalized_score >= 50,
+        'riskLevel': risk_level,
         'topContributors': top_contributors
     }
 
-def get_bot_response(message, analysis, lang):
-    # Fallback responses if API fails
-    fallback_responses = {
+def get_supportive_response(message, analysis, lang='en'):
+    responses = {
         'en': {
-            'depressed': "I hear that you're struggling. Remember, it's okay to feel this way. Would you like to talk more about what's on your mind?",
-            'not_depressed': "Thanks for sharing how you're feeling. I'm here to listen if you'd like to talk more."
-        },
-        'hi': {
-            'depressed': "मैं समझता हूं कि आप संघर्ष कर रहे हैं। याद रखें, इस तरह महसूस करना ठीक है। क्या आप अपने मन की बात और अधिक साझा करना चाहेंगे?",
-            'not_depressed': "अपनी भावनाओं को साझा करने के लिए धन्यवाद। यदि आप और बात करना चाहते हैं तो मैं यहां सुनने के लिए हूं।"
-        },
-        'te': {
-            'depressed': "మీరు కష్టపడుతున్నారని నేను విన్నాను. గుర్తుంచుకోండి, ఈ విధంగా అనుభూతి చెందడం సరే. మీ మనస్సులో ఉన్న దాని గురించి మరింత మాట్లాడాలనుకుంటున్నారా?",
-            'not_depressed': "మీరు ఎలా అనుభూతి చెందుతున్నారో పంచుకున్నందుకు ధన్యవాదాలు. మీరు మరింత మాట్లాడాలనుకుంటే నేను వినడానికి ఇక్కడ ఉన్నాను."
+            'high': [
+                "I hear you're going through a difficult time. Your feelings are valid, and it's brave of you to share.",
+                "Thank you for trusting me with your feelings. Remember, you're not alone in this journey.",
+                "It sounds like you're carrying a heavy burden. Would you like to talk more about what's on your mind?"
+            ],
+            'moderate': [
+                "I notice you might be feeling some stress. It's completely normal to have ups and downs.",
+                "Thanks for sharing how you're feeling. Sometimes talking about our emotions can be really helpful.",
+                "It sounds like you're dealing with some challenges. How can I best support you right now?"
+            ],
+            'low': [
+                "I'm glad you're reaching out. How are you taking care of yourself today?",
+                "Thanks for sharing with me. What's been going well for you lately?",
+                "It's great that you're checking in with your mental health. What brings you here today?"
+            ]
         }
     }
-    
-    if analysis['isDepressed']:
-        return fallback_responses[lang]['depressed']
+
+    if lang != 'en':
+        # Translate responses
+        risk_category = 'high' if analysis['score'] >= 60 else 'moderate' if analysis['score'] >= 30 else 'low'
+        response = random.choice(responses['en'][risk_category])
+        return translate_text(response, lang)
     else:
-        return fallback_responses[lang]['not_depressed']
+        risk_category = 'high' if analysis['score'] >= 60 else 'moderate' if analysis['score'] >= 30 else 'low'
+        return random.choice(responses['en'][risk_category])
 
 @app.route('/')
 def index():
@@ -347,186 +249,85 @@ def index():
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
-    data = request.get_json()
-    message = data['message']
-    lang = data.get('lang', 'en')
-    
-    # Analyze the message
-    analysis = analyze_message(message, lang)
-    
-    # Get bot response
-    response = get_bot_response(message, analysis, lang)
-    
-    # Get random quote and joke
-    quote = random.choice(language_content[lang]['quotes'])
-    joke = random.choice(language_content[lang]['jokes'])
-    
-    return jsonify({
-        'response': response,
-        'analysis': analysis,
-        'quote': quote,
-        'joke': joke
-    })
+    try:
+        data = request.get_json()
+        message = data.get('message', '')
+        lang = data.get('lang', 'en')
 
-@app.route('/get_language_content', methods=['POST'])
-def get_language_content():
-    lang = request.json.get('lang', 'en')
-    return jsonify(language_content.get(lang, language_content['en']))
+        if not message:
+            return jsonify({'error': 'No message provided'}), 400
+
+        # Analyze message
+        analysis = analyze_message(message, lang)
+
+        # Get response
+        response = get_supportive_response(message, analysis, lang)
+
+        # Get random quote and joke
+        quote = random.choice(motivational_quotes)
+        joke = random.choice(jokes_list)
+
+        # Translate if needed
+        if lang != 'en':
+            quote = translate_text(quote, lang)
+            joke = translate_text(joke, lang)
+
+        return jsonify({
+            'response': response,
+            'analysis': analysis,
+            'quote': quote,
+            'joke': joke
+        })
+
+    except Exception as e:
+        print(f"Error in send_message: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/translate_content', methods=['POST'])
 def translate_content():
-    data = request.get_json()
-    text = data.get('text', '')
-    target_lang = data.get('lang', 'en')
-    
-    if not text:
-        return jsonify({'translated': ''})
-    
     try:
-        translated_text = translate_text(text, target_lang)
-        return jsonify({'translated': translated_text})
+        data = request.get_json()
+        text = data.get('text', '')
+        target_lang = data.get('lang', 'en')
+
+        translated = translate_text(text, target_lang)
+        return jsonify({'translated': translated})
+
     except Exception as e:
         print(f"Translation error: {e}")
         return jsonify({'translated': text})
 
-@app.route('/translate_conversation', methods=['POST'])
-def translate_conversation():
-    data = request.get_json()
-    messages = data.get('messages', [])
-    target_lang = data.get('lang', 'en')
-    
-    if not messages:
-        return jsonify({'translated_messages': []})
-    
-    try:
-        translated_messages = []
-        for message in messages:
-            translated_text = translate_text(message, target_lang)
-            translated_messages.append(translated_text)
-        
-        return jsonify({'translated_messages': translated_messages})
-    except Exception as e:
-        print(f"Conversation translation error: {e}")
-        return jsonify({'translated_messages': messages})
-
-@app.route('/translate_ui_content', methods=['POST'])
-def translate_ui_content():
-    data = request.get_json()
-    content = data.get('content', {})
-    target_lang = data.get('lang', 'en')
-    
-    if not content:
-        return jsonify({'translated_content': {}})
-    
-    try:
-        translated_content = {}
-        for key, text in content.items():
-            if isinstance(text, str):
-                translated_content[key] = translate_text(text, target_lang)
-            elif isinstance(text, list):
-                translated_content[key] = [translate_text(item, target_lang) for item in text]
-            else:
-                translated_content[key] = text
-        
-        return jsonify({'translated_content': translated_content})
-    except Exception as e:
-        print(f"UI content translation error: {e}")
-        return jsonify({'translated_content': content})
-
-@app.route('/text_to_speech', methods=['POST'])
-def text_to_speech():
-    data = request.get_json()
-    text = data.get('text', '')
-    lang = data.get('lang', 'en')
-    
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
-    
-    try:
-        # Get the language code for TTS
-        tts_lang = language_codes.get(lang, 'en')
-        
-        # Create TTS object
-        tts = gTTS(text=text, lang=tts_lang, slow=False)
-        
-        # Create a temporary file
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-        temp_file.close()
-        
-        # Save the audio to the temporary file
-        tts.save(temp_file.name)
-        
-        # Return the audio file
-        return send_file(
-            temp_file.name,
-            mimetype='audio/mpeg',
-            as_attachment=True,
-            download_name='speech.mp3'
-        )
-        
-    except Exception as e:
-        print(f"Text to speech error: {e}")
-        return jsonify({'error': 'Failed to generate speech'}), 500
-
 @app.route('/speak_text', methods=['POST'])
 def speak_text():
-    data = request.get_json()
-    text = data.get('text', '')
-    lang = data.get('lang', 'en')
-    
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
-    
     try:
-        # Get the language code for TTS
+        data = request.get_json()
+        text = data.get('text', '')
+        lang = data.get('lang', 'en')
+
+        if not text:
+            return jsonify({'error': 'No text provided'}), 400
+
+        # Get language code for TTS
         tts_lang = language_codes.get(lang, 'en')
-        
-        # Create TTS object
+
+        # Create TTS
         tts = gTTS(text=text, lang=tts_lang, slow=False)
-        
-        # Create audio data in memory
+
+        # Create audio in memory
         audio_buffer = io.BytesIO()
         tts.write_to_fp(audio_buffer)
         audio_buffer.seek(0)
-        
-        # Return the audio data
+
         return send_file(
             audio_buffer,
             mimetype='audio/mpeg',
-            as_attachment=True,
+            as_attachment=False,
             download_name='speech.mp3'
         )
-        
+
     except Exception as e:
-        print(f"Text to speech error: {e}")
+        print(f"TTS error: {e}")
         return jsonify({'error': 'Failed to generate speech'}), 500
 
-@app.route('/get_available_languages', methods=['GET'])
-def get_available_languages():
-    """Return list of available languages for TTS"""
-    languages = {
-        'en': 'English',
-        'hi': 'हिंदी (Hindi)',
-        'te': 'తెలుగు (Telugu)',
-        'es': 'Español (Spanish)',
-        'fr': 'Français (French)',
-        'de': 'Deutsch (German)',
-        'it': 'Italiano (Italian)',
-        'pt': 'Português (Portuguese)',
-        'ru': 'Русский (Russian)',
-        'ja': '日本語 (Japanese)',
-        'ko': '한국어 (Korean)',
-        'zh': '中文 (Chinese)',
-        'ar': 'العربية (Arabic)',
-        'bn': 'বাংলা (Bengali)',
-        'ur': 'اردو (Urdu)',
-        'ta': 'தமிழ் (Tamil)',
-        'ml': 'മലയാളം (Malayalam)',
-        'kn': 'ಕನ್ನಡ (Kannada)',
-        'gu': 'ગુજરાતી (Gujarati)',
-        'pa': 'ਪੰਜਾਬੀ (Punjabi)'
-    }
-    return jsonify(languages)
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

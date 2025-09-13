@@ -4,3 +4,16 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["espeak-ng", "portaudio"]
+
+[workflows]
+runButton = "Run Mental Health Chatbot"
+
+[[workflows.workflow]]
+name = "Run Mental Health Chatbot"
+author = 47550807
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 app.py"
