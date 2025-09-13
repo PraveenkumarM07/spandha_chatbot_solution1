@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_file
 from deep_translator import GoogleTranslator
 from gtts import gTTS
 import random
@@ -328,10 +328,6 @@ def speak_text():
     except Exception as e:
         print(f"TTS error: {e}")
         return jsonify({'error': 'Failed to generate speech'}), 500
-
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory(app.static_folder, filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
