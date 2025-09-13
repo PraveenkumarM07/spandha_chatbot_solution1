@@ -351,6 +351,18 @@
             transform: translateY(0);
         }
 
+        .tts-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message-tts {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--border-color);
+        }
+
         .input-section {
             padding: 1rem 1.5rem;
             background: var(--bg-light);
@@ -697,12 +709,18 @@
                     <i class="fas fa-robot"></i> Hello! I'm Spandha, your AI mental health companion. I'm here to listen, support, and help you feel better. How are you feeling today?
                 </div>
                 
+                <div class="message-tts">
+                    <button class="tts-btn" onclick="speakText('Hello! I am Spandha, your AI mental health companion. I am here to listen, support, and help you feel better. How are you feeling today?')">
+                        <i class="fas fa-volume-up"></i> Listen to Welcome Message
+                    </button>
+                </div>
+                
                 <div class="extras-section">
                     <div class="quote-card">
                         <div class="card-title"><i class="fas fa-quote-left"></i> Daily Motivation</div>
                         <div id="dailyQuote">Peace comes from within. Do not seek it without. 🧘‍♀️</div>
                         <div class="tts-controls">
-                            <button class="tts-btn" onclick="speakText(document.getElementById('dailyQuote').textContent)">
+                            <button class="tts-btn" onclick="speakQuote()">
                                 <i class="fas fa-volume-up"></i> Listen
                             </button>
                         </div>
@@ -712,7 +730,7 @@
                         <div class="card-title"><i class="fas fa-smile"></i> Mood Booster</div>
                         <div id="dailyJoke">🤖 Why don't robots ever panic? Because they have nerves of steel!</div>
                         <div class="tts-controls">
-                            <button class="tts-btn" onclick="speakText(document.getElementById('dailyJoke').textContent)">
+                            <button class="tts-btn" onclick="speakJoke()">
                                 <i class="fas fa-volume-up"></i> Listen
                             </button>
                         </div>
@@ -798,6 +816,7 @@
         let isListening = false;
         let recognition = null;
         let currentAudio = null;
+        let lastBotResponse = '';
 
         // DOM elements
         const chatArea = document.getElementById('chatArea');
@@ -854,7 +873,7 @@
         function showStatus(message, type = 'info') {
             const indicator = document.getElementById('statusIndicator');
             indicator.textContent = message;
-            indicator.className = `status-indicator ${type} show`;
+            indicator.className = 'status-indicator ' + type + ' show';
             
             setTimeout(() => {
                 indicator.classList.remove('show');
@@ -887,10 +906,10 @@
         // Add message to chat
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
             
             if (isUser) {
-                messageDiv.innerHTML = `<i class="fas fa-user"></i> ${content}`;
+                messageDiv.innerHTML = '<i class="fas fa-user"></i> ' + content;
             } else {
                 messageDiv.innerHTML = content;
             }
@@ -899,9 +918,90 @@
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        // Add bot response with analysis
+        // Text-to-speech function
+        async function speakText(text) {
+            try {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                // Disable all TTS buttons temporarily
+                const ttsButtons = document.querySelectorAll('.tts-btn');
+                ttsButtons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speaking...';
+                });
+                
+                const response = await fetch('/speak_text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        lang: currentLanguage
+                    })
+                });
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    currentAudio = new Audio(audioUrl);
+                    
+                    currentAudio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        currentAudio = null;
+                        // Re-enable TTS buttons
+                        ttsButtons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-volume-up"></i> Listen';
+                        });
+                    };
+                    
+                    await currentAudio.play();
+                    showStatus('Playing audio...', 'success');
+                } else {
+                    throw new Error('TTS failed');
+                }
+            } catch (error) {
+                console.error('TTS error:', error);
+                showStatus('Audio not available', 'error');
+                // Re-enable TTS buttons on error
+                const ttsButtons = document.querySelectorAll('.tts-btn');
+                ttsButtons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-volume-up"></i> Listen';
+                });
+            }
+        }
+
+        // Function to speak quote
+        function speakQuote() {
+            const quoteText = document.getElementById('dailyQuote').textContent;
+            speakText(quoteText);
+        }
+
+        // Function to speak joke
+        function speakJoke() {
+            const jokeText = document.getElementById('dailyJoke').textContent;
+            speakText(jokeText);
+        }
+
+        // Add bot response with analysis and TTS options
         function addBotResponse(response, analysis, quote, joke) {
-            let content = `<i class="fas fa-robot"></i> ${response}`;
+            lastBotResponse = response;
+            
+            let content = '<i class="fas fa-robot"></i> ' + response;
+            
+            // Add TTS option for the response
+            content += `
+                <div class="message-tts">
+                    <button class="tts-btn" onclick="speakText('${response.replace(/'/g, "\\'")}')">
+                        <i class="fas fa-volume-up"></i> Listen to Response
+                    </button>
+                </div>
+            `;
             
             if (analysis) {
                 content += `
@@ -916,7 +1016,7 @@
                 if (analysis.topContributors && analysis.topContributors.length > 0) {
                     content += '<div class="word-analysis">';
                     analysis.topContributors.forEach(word => {
-                        content += `<span class="word-chip ${word.positive ? 'positive' : 'negative'}">${word.word}</span>`;
+                        content += '<span class="word-chip ' + (word.positive ? 'positive' : 'negative') + '">' + word.word + '</span>';
                     });
                     content += '</div>';
                 }
@@ -946,54 +1046,9 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="tts-controls">
-                    <button class="tts-btn" onclick="speakText('${response.replace(/'/g, "\\'")}')">
-                        <i class="fas fa-volume-up"></i> Read Response
-                    </button>
-                </div>
             `;
             
             addMessage(content, false);
-        }
-
-        // Text-to-speech function
-        async function speakText(text) {
-            try {
-                if (currentAudio) {
-                    currentAudio.pause();
-                }
-                
-                const response = await fetch('/speak_text', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        lang: currentLanguage
-                    })
-                });
-                
-                if (response.ok) {
-                    const audioBlob = await response.blob();
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    currentAudio = new Audio(audioUrl);
-                    
-                    currentAudio.onended = () => {
-                        URL.revokeObjectURL(audioUrl);
-                        currentAudio = null;
-                    };
-                    
-                    await currentAudio.play();
-                    showStatus('Playing audio...', 'success');
-                } else {
-                    throw new Error('TTS failed');
-                }
-            } catch (error) {
-                console.error('TTS error:', error);
-                showStatus('Audio not available', 'error');
-            }
         }
 
         // Send message
@@ -1025,7 +1080,7 @@
                 if (response.ok) {
                     addBotResponse(data.response, data.analysis, data.quote, data.joke);
                     
-                    // Auto-speak response
+                    // Auto-speak response after a short delay
                     setTimeout(() => {
                         speakText(data.response);
                     }, 500);
@@ -1044,6 +1099,7 @@
         function clearChat() {
             const messages = chatArea.querySelectorAll('.message:not(:first-child), .typing-indicator');
             messages.forEach(msg => msg.remove());
+            lastBotResponse = '';
             showStatus('Chat cleared', 'success');
         }
 
@@ -1080,10 +1136,10 @@
         });
         
         speakBtn.addEventListener('click', () => {
-            const lastBotMessage = chatArea.querySelector('.bot-message:last-of-type');
-            if (lastBotMessage) {
-                const textContent = lastBotMessage.textContent.split('Mental Health Analysis')[0].replace('🤖', '').trim();
-                speakText(textContent);
+            if (lastBotResponse) {
+                speakText(lastBotResponse);
+            } else {
+                showStatus('No message to read', 'info');
             }
         });
         
@@ -1092,7 +1148,7 @@
         
         languageSelector.addEventListener('change', (e) => {
             currentLanguage = e.target.value;
-            showStatus(`Language changed to ${e.target.options[e.target.selectedIndex].text}`, 'success');
+            showStatus('Language changed to ' + e.target.options[e.target.selectedIndex].text, 'success');
             
             if (recognition) {
                 const langMap = {
@@ -1121,8 +1177,11 @@
             showStatus('Spandha is ready to help!', 'success');
         });
 
-        // Make speakText globally accessible
+        // Make functions globally accessible
         window.speakText = speakText;
+        window.speakQuote = speakQuote;
+        window.speakJoke = speakJoke;
+        window.closeResourcesModal = closeResourcesModal;
     </script>
 </body>
 </html>
