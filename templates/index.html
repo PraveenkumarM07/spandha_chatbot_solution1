@@ -47,7 +47,7 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 800px;
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-heavy);
@@ -55,6 +55,7 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: slideIn 0.6s ease-out;
+            min-height: 80vh;
         }
 
         @keyframes slideIn {
@@ -160,13 +161,13 @@
         }
 
         .chat-area {
-            height: 400px;
-            padding: 1rem;
+            height: 500px;
+            padding: 1.5rem;
             overflow-y: auto;
             background: white;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .chat-area::-webkit-scrollbar {
@@ -188,12 +189,14 @@
         }
 
         .message {
-            max-width: 85%;
-            padding: 0.875rem 1.125rem;
+            max-width: 80%;
+            padding: 1rem 1.25rem;
             border-radius: var(--border-radius);
             word-wrap: break-word;
             animation: messageSlide 0.3s ease-out;
             position: relative;
+            font-size: 1rem;
+            line-height: 1.6;
         }
 
         @keyframes messageSlide {
@@ -363,11 +366,11 @@
         }
 
         .input-section {
-            padding: 1rem 1.5rem;
+            padding: 1.5rem;
             background: var(--bg-light);
             border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 0.75rem;
+            gap: 1rem;
             align-items: flex-end;
         }
 
@@ -401,8 +404,8 @@
         }
 
         .action-btn {
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
@@ -410,7 +413,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             box-shadow: var(--shadow-light);
         }
 
@@ -618,6 +621,62 @@
 
         .status-indicator.info {
             border-left: 4px solid var(--info-color);
+        }
+
+        /* Desktop optimizations */
+        @media (min-width: 769px) {
+            .container {
+                margin: 2rem auto;
+            }
+            
+            .header {
+                padding: 2rem;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+            
+            .controls {
+                padding: 1.5rem;
+            }
+            
+            .language-select {
+                font-size: 1rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .control-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+            }
+            
+            .message-input {
+                font-size: 1rem;
+                padding: 1rem 1.25rem;
+                min-height: 50px;
+            }
+            
+            .tts-btn {
+                font-size: 0.95rem;
+                padding: 0.6rem 1rem;
+            }
+            
+            .analysis-section, .quote-card, .joke-card {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
         }
 
         /* Enhanced mobile and device responsiveness */
