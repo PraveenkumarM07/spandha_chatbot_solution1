@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -708,13 +707,13 @@
                 <div id="welcomeMessage">
                     <i class="fas fa-robot"></i> Hello! I'm Spandha, your AI mental health companion. I'm here to listen, support, and help you feel better. How are you feeling today?
                 </div>
-                
+
                 <div class="message-tts">
-                    <button class="tts-btn" onclick="speakText('Hello! I am Spandha, your AI mental health companion. I am here to listen, support, and help you feel better. How are you feeling today?')">
+                    <button class="tts-btn" onclick="speakText(`Hello! I am Spandana, your AI mental health companion. I am here to listen, support, and help you feel better. How are you feeling today?`)">
                         <i class="fas fa-volume-up"></i> Listen to Welcome Message
                     </button>
                 </div>
-                
+
                 <div class="extras-section">
                     <div class="quote-card">
                         <div class="card-title"><i class="fas fa-quote-left"></i> Daily Motivation</div>
@@ -725,7 +724,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="joke-card">
                         <div class="card-title"><i class="fas fa-smile"></i> Mood Booster</div>
                         <div id="dailyJoke">🤖 Why don't robots ever panic? Because they have nerves of steel!</div>
@@ -772,7 +771,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="resource-item">
                 <div class="resource-title">🧘‍♀️ Meditation & Mindfulness</div>
                 <div class="resource-description">Learn breathing techniques and meditation practices for inner peace</div>
@@ -780,7 +779,7 @@
                     <i class="fab fa-youtube"></i> Watch Guide
                 </a>
             </div>
-            
+
             <div class="resource-item">
                 <div class="resource-title">😌 Stress Management</div>
                 <div class="resource-description">Effective strategies to manage daily stress and anxiety</div>
@@ -788,7 +787,7 @@
                     <i class="fab fa-youtube"></i> Learn Techniques
                 </a>
             </div>
-            
+
             <div class="resource-item">
                 <div class="resource-title">💚 Mental Wellness Tips</div>
                 <div class="resource-description">Daily practices for better mental health and wellbeing</div>
@@ -796,7 +795,7 @@
                     <i class="fab fa-youtube"></i> Explore Tips
                 </a>
             </div>
-            
+
             <div class="resource-item">
                 <div class="resource-title">🆘 Crisis Support</div>
                 <div class="resource-description">If you're in crisis, please reach out for immediate help</div>
@@ -874,7 +873,7 @@
             const indicator = document.getElementById('statusIndicator');
             indicator.textContent = message;
             indicator.className = 'status-indicator ' + type + ' show';
-            
+
             setTimeout(() => {
                 indicator.classList.remove('show');
             }, 3000);
@@ -907,13 +906,13 @@
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
-            
+
             if (isUser) {
                 messageDiv.innerHTML = '<i class="fas fa-user"></i> ' + content;
             } else {
                 messageDiv.innerHTML = content;
             }
-            
+
             chatArea.appendChild(messageDiv);
             chatArea.scrollTop = chatArea.scrollHeight;
         }
@@ -925,14 +924,14 @@
                     currentAudio.pause();
                     currentAudio = null;
                 }
-                
+
                 // Disable all TTS buttons temporarily
                 const ttsButtons = document.querySelectorAll('.tts-btn');
                 ttsButtons.forEach(btn => {
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speaking...';
                 });
-                
+
                 const response = await fetch('/speak_text', {
                     method: 'POST',
                     headers: {
@@ -943,12 +942,12 @@
                         lang: currentLanguage
                     })
                 });
-                
+
                 if (response.ok) {
                     const audioBlob = await response.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
                     currentAudio = new Audio(audioUrl);
-                    
+
                     currentAudio.onended = () => {
                         URL.revokeObjectURL(audioUrl);
                         currentAudio = null;
@@ -958,7 +957,7 @@
                             btn.innerHTML = '<i class="fas fa-volume-up"></i> Listen';
                         });
                     };
-                    
+
                     await currentAudio.play();
                     showStatus('Playing audio...', 'success');
                 } else {
@@ -991,9 +990,9 @@
         // Add bot response with analysis and TTS options
         function addBotResponse(response, analysis, quote, joke) {
             lastBotResponse = response;
-            
+
             let content = '<i class="fas fa-robot"></i> ' + response;
-            
+
             // Add TTS option for the response
             content += `
                 <div class="message-tts">
@@ -1002,7 +1001,7 @@
                     </button>
                 </div>
             `;
-            
+
             if (analysis) {
                 content += `
                     <div class="analysis-section">
@@ -1012,7 +1011,7 @@
                             <div class="risk-level" style="width: ${analysis.score}%"></div>
                         </div>
                 `;
-                
+
                 if (analysis.topContributors && analysis.topContributors.length > 0) {
                     content += '<div class="word-analysis">';
                     analysis.topContributors.forEach(word => {
@@ -1020,10 +1019,10 @@
                     });
                     content += '</div>';
                 }
-                
+
                 content += '</div>';
             }
-            
+
             content += `
                 <div class="extras-section">
                     <div class="quote-card">
@@ -1035,7 +1034,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="joke-card">
                         <div class="card-title"><i class="fas fa-smile"></i> Smile Break</div>
                         <div>${joke}</div>
@@ -1047,7 +1046,7 @@
                     </div>
                 </div>
             `;
-            
+
             addMessage(content, false);
         }
 
@@ -1055,13 +1054,13 @@
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
-            
+
             addMessage(message, true);
             messageInput.value = '';
             autoResizeTextarea();
-            
+
             showTypingIndicator();
-            
+
             try {
                 const response = await fetch('/send_message', {
                     method: 'POST',
@@ -1073,13 +1072,13 @@
                         lang: currentLanguage
                     })
                 });
-                
+
                 const data = await response.json();
                 removeTypingIndicator();
-                
+
                 if (response.ok) {
                     addBotResponse(data.response, data.analysis, data.quote, data.joke);
-                    
+
                     // Auto-speak response after a short delay
                     setTimeout(() => {
                         speakText(data.response);
@@ -1115,16 +1114,16 @@
 
         // Event listeners
         sendBtn.addEventListener('click', sendMessage);
-        
+
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
-        
+
         messageInput.addEventListener('input', autoResizeTextarea);
-        
+
         voiceBtn.addEventListener('click', () => {
             if (recognition) {
                 if (isListening) {
@@ -1134,7 +1133,7 @@
                 }
             }
         });
-        
+
         speakBtn.addEventListener('click', () => {
             if (lastBotResponse) {
                 speakText(lastBotResponse);
@@ -1142,14 +1141,14 @@
                 showStatus('No message to read', 'info');
             }
         });
-        
+
         clearBtn.addEventListener('click', clearChat);
         resourcesBtn.addEventListener('click', openResourcesModal);
-        
+
         languageSelector.addEventListener('change', (e) => {
             currentLanguage = e.target.value;
             showStatus('Language changed to ' + e.target.options[e.target.selectedIndex].text, 'success');
-            
+
             if (recognition) {
                 const langMap = {
                     'en': 'en-US',

@@ -329,5 +329,12 @@ def speak_text():
         print(f"TTS error: {e}")
         return jsonify({'error': 'Failed to generate speech'}), 500
 
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    try:
+        return send_file(f'static/{filename}')
+    except:
+        return '', 404
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
