@@ -1,4 +1,6 @@
 modules = ["web", "python-3.12"]
+run = "python3 app.py"
+
 [agent]
 expertMode = true
 
