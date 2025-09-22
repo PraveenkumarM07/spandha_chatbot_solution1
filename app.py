@@ -48,19 +48,17 @@ depression_keywords = {
         'उदास': 0.5, 'निराश': 0.7, 'अकेला': 0.6, 'थकान': 0.4, 'तनाव': 0.5,
         'चिंता': 0.6, 'दुखी': 0.5, 'हताश': 0.7, 'खाली': 0.5, 'बेकार': 0.7,
         'दोषी': 0.4, 'थका': 0.3, 'आत्महत्या': 0.9, 'मरना': 0.8, 'मौत': 0.7,
-        'दर्द': 0.5, 'रोना': 0.4, 'दुखी': 0.7, 'नफरत': 0.6, 'असफल': 0.5,
-        'चिंता': 0.6, 'चिंतित': 0.4, 'तनाव': 0.5, 'अभिभूत': 0.6, 'थकान': 0.3,
-        'सुन्न': 0.4, 'लाचार': 0.7, 'निराशा': 0.8, 'शोक': 0.6, 'टूटा': 0.7,
-        'खोया': 0.5, 'अकेला': 0.6
+        'दर्द': 0.5, 'रोना': 0.4, 'नफरत': 0.6, 'असफल': 0.5,
+        'चिंतित': 0.4, 'अभिभूत': 0.6, 'सुन्न': 0.4, 'लाचार': 0.7, 'निराशा': 0.8, 
+        'शोक': 0.6, 'टूटा': 0.7, 'खोया': 0.5
     },
     'te': {
         'విచారంగా': 0.5, 'నిరాశ': 0.7, 'ఒంటరిగా': 0.6, 'అలసట': 0.4, 'ఒత్తిడి': 0.5,
         'ఆందోళన': 0.6, 'దుఃఖంతో': 0.5, 'నిస్పృహ': 0.7, 'ఖాళీగా': 0.5, 'పనికిరాని': 0.7,
         'అపరాధి': 0.4, 'అలసిన': 0.3, 'ఆత్మహత్య': 0.9, 'చనిపోవు': 0.8, 'మరణం': 0.7,
         'నొప్పి': 0.5, 'ఏడుచు': 0.4, 'దుర్భరమైన': 0.7, 'ద్వేషం': 0.6, 'విఫలం': 0.5,
-        'ఆందోళన': 0.6, 'ఆందోళనకు': 0.4, 'ఒత్తిడి': 0.5, 'ముంచెత్తిన': 0.6, 'అలసట': 0.3,
-        'సున్నం': 0.4, 'నిస్సహాయంగా': 0.7, 'హతాశ': 0.8, 'దుఃఖం': 0.6, 'నొక్కిన': 0.7,
-        'పోయిన': 0.5, 'ఒంటరిగా': 0.6
+        'ఆందోళనకు': 0.4, 'ముంచెత్తిన': 0.6, 'సున్నం': 0.4, 'నిస్సహాయంగా': 0.7, 
+        'హతాశ': 0.8, 'దుఃఖం': 0.6, 'నొక్కిన': 0.7, 'పోయిన': 0.5
     }
 }
 
@@ -86,7 +84,7 @@ positive_keywords = {
     }
 }
 
-# Negation words
+# Negation words (currently not used but kept for future enhancement)
 negation_words = {
     'en': ['not', 'no', 'never', 'don\'t', 'doesn\'t', 'cant', 'cannot', 'won\'t', 'isnt', 'aren\'t'],
     'hi': ['नहीं', 'मत', 'कभी नहीं', 'न', 'मैं नहीं', 'नहीं करता'],
@@ -148,28 +146,48 @@ def load_jokes():
         print(f"Error loading jokes: {e}")
     return jokes
 
+# Initialize quotes and jokes
 motivational_quotes = load_motivational_quotes()
 jokes_list = load_jokes()
 
 def translate_text(text, dest_lang):
+    """Translate text to destination language with error handling"""
     if dest_lang == 'en' or not text:
         return text
     try:
         translator = GoogleTranslator(source='auto', target=dest_lang)
         translated = translator.translate(text)
-        return translated
+        return translated if translated else text
     except Exception as e:
         print(f"Translation error: {e}")
         return text
 
 def analyze_message(message, lang='en'):
+    """Analyze message for depression indicators with improved error handling"""
+    if not message or not isinstance(message, str):
+        return {
+            'score': 0,
+            'isDepressed': False,
+            'riskLevel': "Low Risk",
+            'topContributors': []
+        }
+    
     # Clean and tokenize
-    message_lower = message.lower()
+    message_lower = message.lower().strip()
     words = re.findall(r'\b\w+\b', message_lower)
+    
+    if not words:
+        return {
+            'score': 0,
+            'isDepressed': False,
+            'riskLevel': "Low Risk",
+            'topContributors': []
+        }
 
     score = 0
     contributing_words = []
 
+    # Get keywords for the specified language, fallback to English
     dep_words = depression_keywords.get(lang, depression_keywords['en'])
     pos_words = positive_keywords.get(lang, positive_keywords['en'])
 
@@ -207,13 +225,14 @@ def analyze_message(message, lang='en'):
         risk_level = "High Risk"
 
     return {
-        'score': normalized_score,
+        'score': round(normalized_score, 2),
         'isDepressed': normalized_score >= 50,
         'riskLevel': risk_level,
         'topContributors': top_contributors
     }
 
 def get_supportive_response(message, analysis, lang='en'):
+    """Generate supportive response based on analysis"""
     responses = {
         'en': {
             'high': [
@@ -234,28 +253,50 @@ def get_supportive_response(message, analysis, lang='en'):
         }
     }
 
-    if lang != 'en':
-        # Translate responses
-        risk_category = 'high' if analysis['score'] >= 60 else 'moderate' if analysis['score'] >= 30 else 'low'
-        response = random.choice(responses['en'][risk_category])
-        return translate_text(response, lang)
+    # Determine risk category
+    score = analysis.get('score', 0)
+    if score >= 60:
+        risk_category = 'high'
+    elif score >= 30:
+        risk_category = 'moderate'
     else:
-        risk_category = 'high' if analysis['score'] >= 60 else 'moderate' if analysis['score'] >= 30 else 'low'
-        return random.choice(responses['en'][risk_category])
+        risk_category = 'low'
+
+    # Get response in English first
+    response = random.choice(responses['en'][risk_category])
+    
+    # Translate if needed
+    if lang != 'en':
+        response = translate_text(response, lang)
+    
+    return response
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    """Serve the main page"""
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        print(f"Error serving index page: {e}")
+        return f"Error loading page: {str(e)}", 500
 
 @app.route('/send_message', methods=['POST'])
 def send_message():
+    """Handle message sending and analysis"""
     try:
         data = request.get_json()
-        message = data.get('message', '')
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        message = data.get('message', '').strip()
         lang = data.get('lang', 'en')
 
         if not message:
             return jsonify({'error': 'No message provided'}), 400
+
+        # Validate language code
+        if lang not in language_codes:
+            lang = 'en'
 
         # Analyze message
         analysis = analyze_message(message, lang)
@@ -264,8 +305,8 @@ def send_message():
         response = get_supportive_response(message, analysis, lang)
 
         # Get random quote and joke
-        quote = random.choice(motivational_quotes)
-        joke = random.choice(jokes_list)
+        quote = random.choice(motivational_quotes) if motivational_quotes else "Stay positive! 😊"
+        joke = random.choice(jokes_list) if jokes_list else "Why did the computer go to therapy? It had too many bytes! 💻"
 
         # Translate if needed
         if lang != 'en':
@@ -276,42 +317,64 @@ def send_message():
             'response': response,
             'analysis': analysis,
             'quote': quote,
-            'joke': joke
+            'joke': joke,
+            'status': 'success'
         })
 
     except Exception as e:
         print(f"Error in send_message: {e}")
-        return jsonify({'error': 'Internal server error'}), 500
+        error_msg = error_messages.get(request.get_json().get('lang', 'en'), error_messages['en']).get('api_error', 'Internal server error')
+        return jsonify({'error': error_msg}), 500
 
 @app.route('/translate_content', methods=['POST'])
 def translate_content():
+    """Handle content translation"""
     try:
         data = request.get_json()
-        text = data.get('text', '')
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        text = data.get('text', '').strip()
         target_lang = data.get('lang', 'en')
 
+        if not text:
+            return jsonify({'translated': ''})
+
+        # Validate language code
+        if target_lang not in language_codes:
+            target_lang = 'en'
+
         translated = translate_text(text, target_lang)
-        return jsonify({'translated': translated})
+        return jsonify({'translated': translated, 'status': 'success'})
 
     except Exception as e:
         print(f"Translation error: {e}")
-        return jsonify({'translated': text})
+        return jsonify({'translated': data.get('text', ''), 'status': 'error'})
 
 @app.route('/speak_text', methods=['POST'])
 def speak_text():
+    """Handle text-to-speech conversion"""
     try:
         data = request.get_json()
-        text = data.get('text', '')
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        text = data.get('text', '').strip()
         lang = data.get('lang', 'en')
 
         if not text:
             return jsonify({'error': 'No text provided'}), 400
 
-        # Get language code for TTS
+        # Validate and get language code for TTS
         tts_lang = language_codes.get(lang, 'en')
 
-        # Create TTS
-        tts = gTTS(text=text, lang=tts_lang, slow=False)
+        # Create TTS with error handling
+        try:
+            tts = gTTS(text=text, lang=tts_lang, slow=False)
+        except Exception as tts_error:
+            print(f"TTS creation error: {tts_error}")
+            # Fallback to English if the language is not supported
+            tts = gTTS(text=text, lang='en', slow=False)
 
         # Create audio in memory
         audio_buffer = io.BytesIO()
@@ -331,10 +394,34 @@ def speak_text():
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
+    """Serve static files with error handling"""
     try:
-        return send_file(f'static/{filename}')
-    except:
+        static_path = os.path.join('static', filename)
+        if os.path.exists(static_path):
+            return send_file(static_path)
+        else:
+            return '', 404
+    except Exception as e:
+        print(f"Static file error: {e}")
         return '', 404
 
+@app.errorhandler(404)
+def not_found(error):
+    """Handle 404 errors"""
+    return jsonify({'error': 'Resource not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle 500 errors"""
+    return jsonify({'error': 'Internal server error'}), 500
+
 if __name__ == '__main__':
+    # Ensure required directories exist
+    os.makedirs('static', exist_ok=True)
+    os.makedirs('templates', exist_ok=True)
+    
+    print("Starting Mental Health Chatbot...")
+    print(f"Loaded {len(motivational_quotes)} motivational quotes")
+    print(f"Loaded {len(jokes_list)} jokes")
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
